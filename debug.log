@@ -10523,3 +10523,481 @@ INFO 2025-06-07 00:34:14,169 views 1688 2384 完整响应处理耗时: 27.36秒
 INFO 2025-06-07 00:34:14,169 views 1688 2384 总响应长度: 1512 字符
 INFO 2025-06-07 00:34:14,169 views 1688 2384 总响应块数: 784
 INFO 2025-06-07 00:34:14,170 basehttp 1688 2384 "POST /api/chat/stream/ HTTP/1.1" 200 30581
+INFO 2025-06-07 00:34:35,834 autoreload 22276 21808 Watching for file changes with StatReloader
+ERROR 2025-06-07 00:37:07,956 log 22276 21292 Internal Server Error: /api/chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\gongjuyuan_chat\chat\views.py", line 348, in chat_widget
+    return render(request, 'chat/chat_widget.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 484, in parse
+    raise self.error(token, e)
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '(conv.created_at)' from 'formatTime(conv.created_at)'
+ERROR 2025-06-07 00:37:07,960 basehttp 22276 21292 "GET /api/chat/chat/1/ HTTP/1.1" 500 159404
+ERROR 2025-06-07 00:37:53,609 log 22276 21292 Internal Server Error: /api/chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\gongjuyuan_chat\chat\views.py", line 348, in chat_widget
+    return render(request, 'chat/chat_widget.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 484, in parse
+    raise self.error(token, e)
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 698, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 606, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'formatTime'
+ERROR 2025-06-07 00:37:53,612 basehttp 22276 21292 "GET /api/chat/chat/1/ HTTP/1.1" 500 164379
+WARNING 2025-06-07 00:38:36,485 log 22276 9224 Not Found: /robots.txt
+WARNING 2025-06-07 00:38:36,487 basehttp 22276 9224 "GET /robots.txt HTTP/1.1" 404 2637
+ERROR 2025-06-07 00:38:39,493 log 22276 21292 Internal Server Error: /api/chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\gongjuyuan_chat\chat\views.py", line 348, in chat_widget
+    return render(request, 'chat/chat_widget.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 484, in parse
+    raise self.error(token, e)
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '(conv.created_at)' from 'formatTime(conv.created_at)'
+ERROR 2025-06-07 00:38:39,496 basehttp 22276 21292 "GET /api/chat/chat/1/ HTTP/1.1" 500 159404
+WARNING 2025-06-07 00:38:46,733 log 22276 9224 Not Found: /news/video/video2.html
+WARNING 2025-06-07 00:38:46,733 basehttp 22276 9224 "GET /news/video/video2.html HTTP/1.1" 404 2673
+ERROR 2025-06-07 00:38:53,551 log 22276 21292 Internal Server Error: /api/chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\gongjuyuan_chat\chat\views.py", line 348, in chat_widget
+    return render(request, 'chat/chat_widget.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 484, in parse
+    raise self.error(token, e)
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\huxia\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\template\base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: ' ? '发送中...' : '发送'' from 'isLoading ? '发送中...' : '发送''
+ERROR 2025-06-07 00:38:53,556 basehttp 22276 21292 "GET /api/chat/chat/1/ HTTP/1.1" 500 157931
+INFO 2025-06-07 00:39:09,429 basehttp 22276 12180 "GET /api/chat/chat/1/ HTTP/1.1" 200 25138
+INFO 2025-06-07 00:39:10,277 basehttp 22276 12180 "GET /api/chat/chat/1/ HTTP/1.1" 200 25138
+INFO 2025-06-07 00:39:14,649 basehttp 22276 12180 "GET /api/chat/applications/1/conversations/ HTTP/1.1" 200 23788
+WARNING 2025-06-07 00:39:14,660 log 22276 12180 Not Found: /api/chat/conversations/c82e6e71-d22b-4e5a-bc3b-de733d1c849a/messages/
+WARNING 2025-06-07 00:39:14,661 basehttp 22276 12180 "GET /api/chat/conversations/c82e6e71-d22b-4e5a-bc3b-de733d1c849a/messages/ HTTP/1.1" 404 5466
+WARNING 2025-06-07 00:39:16,027 log 22276 12180 Not Found: /api/chat/conversations/e0ccabfc-a69c-418c-98b3-9b378ab439ab/messages/
+WARNING 2025-06-07 00:39:16,028 basehttp 22276 12180 "GET /api/chat/conversations/e0ccabfc-a69c-418c-98b3-9b378ab439ab/messages/ HTTP/1.1" 404 5466
+WARNING 2025-06-07 00:39:17,036 log 22276 21572 Not Found: /api/chat/conversations/e0ccabfc-a69c-418c-98b3-9b378ab439ab/messages/
+WARNING 2025-06-07 00:39:17,036 basehttp 22276 21572 "GET /api/chat/conversations/e0ccabfc-a69c-418c-98b3-9b378ab439ab/messages/ HTTP/1.1" 404 5466
+WARNING 2025-06-07 00:39:17,851 log 22276 21572 Not Found: /api/chat/conversations/bd06f640-11aa-45ad-b947-ba7ad5c2d59d/messages/
+WARNING 2025-06-07 00:39:17,851 basehttp 22276 21572 "GET /api/chat/conversations/bd06f640-11aa-45ad-b947-ba7ad5c2d59d/messages/ HTTP/1.1" 404 5466
+WARNING 2025-06-07 00:39:19,532 log 22276 21572 Not Found: /api/chat/conversations/c2372f6d-8fbc-4c36-809a-385ec3502ce9/messages/
+WARNING 2025-06-07 00:39:19,532 basehttp 22276 21572 "GET /api/chat/conversations/c2372f6d-8fbc-4c36-809a-385ec3502ce9/messages/ HTTP/1.1" 404 5466
+WARNING 2025-06-07 00:39:23,859 log 22276 21572 Not Found: /api/chat/conversations/c82e6e71-d22b-4e5a-bc3b-de733d1c849a/messages/
+WARNING 2025-06-07 00:39:23,860 basehttp 22276 21572 "GET /api/chat/conversations/c82e6e71-d22b-4e5a-bc3b-de733d1c849a/messages/ HTTP/1.1" 404 5466
+INFO 2025-06-07 00:39:28,081 views 22276 21572 开始处理请求: 2025-06-07 00:39:28
+INFO 2025-06-07 00:39:28,085 views 22276 21572 收到的请求数据: {'message': '你是？', 'application_id': 1, 'conversation_id': None, 'temperature': 0.7, 'max_tokens': 2000}
+INFO 2025-06-07 00:39:28,087 views 22276 21572 获取应用耗时: 0.01秒
+INFO 2025-06-07 00:39:28,088 views 22276 21572 应用信息: 测试, 模型: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+INFO 2025-06-07 00:39:28,098 views 22276 21572 创建新对话: 0b957d14-583b-4b38-b175-f143233d98a3
+INFO 2025-06-07 00:39:28,098 views 22276 21572 获取/创建对话耗时: 0.02秒
+INFO 2025-06-07 00:39:28,113 views 22276 21572 保存用户消息完成: 65
+INFO 2025-06-07 00:39:28,113 views 22276 21572 开始流式响应: 2025-06-07 00:39:28
+INFO 2025-06-07 00:39:28,454 views 22276 21572 OpenAI客户端初始化完成，API URL: https://api.siliconflow.cn/v1/
+INFO 2025-06-07 00:39:28,455 views 22276 21572 准备的消息列表: [{'role': 'user', 'content': '你是？'}]
+INFO 2025-06-07 00:39:28,455 views 22276 21572 准备消息耗时: 0.34秒
+INFO 2025-06-07 00:39:28,455 views 22276 21572 发送到OpenAI的消息: [{'role': 'system', 'content': '测试'}, {'role': 'user', 'content': '你是？'}]
+INFO 2025-06-07 00:39:28,456 views 22276 21572 开始调用OpenAI API: 2025-06-07 00:39:28
+INFO 2025-06-07 00:39:28,909 views 22276 21572 OpenAI API调用成功，开始接收流式响应
+INFO 2025-06-07 00:39:28,910 views 22276 21572 OpenAI API调用耗时: 0.45秒
+DEBUG 2025-06-07 00:39:28,918 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=''), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=0, prompt_tokens=8, total_tokens=8, completion_tokens_details=None, prompt_tokens_details=None))
+WARNING 2025-06-07 00:39:28,919 views 22276 21572 响应块没有有效内容
+DEBUG 2025-06-07 00:39:28,919 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='您好'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=1, prompt_tokens=8, total_tokens=9, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=1, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:28,920 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u60a8\u597d"}
+INFO 2025-06-07 00:39:28,920 views 22276 21572 收到第一个响应块耗时: 0.46秒
+INFO 2025-06-07 00:39:28,921 views 22276 21572 发送响应块 1: 您好
+DEBUG 2025-06-07 00:39:28,964 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='！'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=2, prompt_tokens=8, total_tokens=10, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=2, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:28,965 views 22276 21572 发送思考过程数据: {"reasoning_content": "\uff01"}
+INFO 2025-06-07 00:39:28,965 views 22276 21572 发送响应块 2: ！
+DEBUG 2025-06-07 00:39:29,020 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='我是'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=3, prompt_tokens=8, total_tokens=11, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=3, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,020 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6211\u662f"}
+INFO 2025-06-07 00:39:29,021 views 22276 21572 发送响应块 3: 我是
+DEBUG 2025-06-07 00:39:29,074 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='由'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=4, prompt_tokens=8, total_tokens=12, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=4, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,075 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u7531"}
+INFO 2025-06-07 00:39:29,075 views 22276 21572 发送响应块 4: 由
+DEBUG 2025-06-07 00:39:29,140 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='中国的'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=5, prompt_tokens=8, total_tokens=13, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=5, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,141 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u4e2d\u56fd\u7684"}
+INFO 2025-06-07 00:39:29,141 views 22276 21572 发送响应块 5: 中国的
+DEBUG 2025-06-07 00:39:29,191 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='深度'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=6, prompt_tokens=8, total_tokens=14, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=6, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,191 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6df1\u5ea6"}
+INFO 2025-06-07 00:39:29,192 views 22276 21572 发送响应块 6: 深度
+DEBUG 2025-06-07 00:39:29,244 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='求'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=7, prompt_tokens=8, total_tokens=15, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=7, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,245 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6c42"}
+INFO 2025-06-07 00:39:29,245 views 22276 21572 发送响应块 7: 求
+DEBUG 2025-06-07 00:39:29,298 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='索'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=8, prompt_tokens=8, total_tokens=16, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=8, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,299 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u7d22"}
+INFO 2025-06-07 00:39:29,299 views 22276 21572 发送响应块 8: 索
+DEBUG 2025-06-07 00:39:29,353 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='（'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=9, prompt_tokens=8, total_tokens=17, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=9, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,354 views 22276 21572 发送思考过程数据: {"reasoning_content": "\uff08"}
+INFO 2025-06-07 00:39:29,354 views 22276 21572 发送响应块 9: （
+DEBUG 2025-06-07 00:39:29,405 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='Deep'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=10, prompt_tokens=8, total_tokens=18, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=10, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,405 views 22276 21572 发送思考过程数据: {"reasoning_content": "Deep"}
+INFO 2025-06-07 00:39:29,405 views 22276 21572 发送响应块 10: Deep
+DEBUG 2025-06-07 00:39:29,461 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='Seek'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=11, prompt_tokens=8, total_tokens=19, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=11, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,461 views 22276 21572 发送思考过程数据: {"reasoning_content": "Seek"}
+INFO 2025-06-07 00:39:29,462 views 22276 21572 发送响应块 11: Seek
+DEBUG 2025-06-07 00:39:29,512 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='）'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=12, prompt_tokens=8, total_tokens=20, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=12, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,512 views 22276 21572 发送思考过程数据: {"reasoning_content": "\uff09"}
+INFO 2025-06-07 00:39:29,513 views 22276 21572 发送响应块 12: ）
+DEBUG 2025-06-07 00:39:29,564 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='公司'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=13, prompt_tokens=8, total_tokens=21, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=13, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,564 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u516c\u53f8"}
+INFO 2025-06-07 00:39:29,565 views 22276 21572 发送响应块 13: 公司
+DEBUG 2025-06-07 00:39:29,618 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='开发'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=14, prompt_tokens=8, total_tokens=22, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=14, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,618 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u5f00\u53d1"}
+INFO 2025-06-07 00:39:29,618 views 22276 21572 发送响应块 14: 开发
+DEBUG 2025-06-07 00:39:29,671 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='的'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=15, prompt_tokens=8, total_tokens=23, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=15, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,671 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u7684"}
+INFO 2025-06-07 00:39:29,672 views 22276 21572 发送响应块 15: 的
+DEBUG 2025-06-07 00:39:29,723 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='智能'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=16, prompt_tokens=8, total_tokens=24, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=16, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,723 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u667a\u80fd"}
+INFO 2025-06-07 00:39:29,723 views 22276 21572 发送响应块 16: 智能
+DEBUG 2025-06-07 00:39:29,776 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='助手'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=17, prompt_tokens=8, total_tokens=25, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=17, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,777 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u52a9\u624b"}
+INFO 2025-06-07 00:39:29,777 views 22276 21572 发送响应块 17: 助手
+DEBUG 2025-06-07 00:39:29,830 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='Deep'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=18, prompt_tokens=8, total_tokens=26, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=18, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,831 views 22276 21572 发送思考过程数据: {"reasoning_content": "Deep"}
+INFO 2025-06-07 00:39:29,831 views 22276 21572 发送响应块 18: Deep
+DEBUG 2025-06-07 00:39:29,883 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='Seek'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=19, prompt_tokens=8, total_tokens=27, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=19, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,883 views 22276 21572 发送思考过程数据: {"reasoning_content": "Seek"}
+INFO 2025-06-07 00:39:29,883 views 22276 21572 发送响应块 19: Seek
+DEBUG 2025-06-07 00:39:29,936 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='-R'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=20, prompt_tokens=8, total_tokens=28, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=20, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,937 views 22276 21572 发送思考过程数据: {"reasoning_content": "-R"}
+INFO 2025-06-07 00:39:29,937 views 22276 21572 发送响应块 20: -R
+DEBUG 2025-06-07 00:39:29,992 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='1'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=21, prompt_tokens=8, total_tokens=29, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=21, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:29,993 views 22276 21572 发送思考过程数据: {"reasoning_content": "1"}
+INFO 2025-06-07 00:39:29,993 views 22276 21572 发送响应块 21: 1
+DEBUG 2025-06-07 00:39:30,045 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='。'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=22, prompt_tokens=8, total_tokens=30, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=22, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,046 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u3002"}
+INFO 2025-06-07 00:39:30,046 views 22276 21572 发送响应块 22: 。
+DEBUG 2025-06-07 00:39:30,099 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='如'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=23, prompt_tokens=8, total_tokens=31, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=23, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,100 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u5982"}
+INFO 2025-06-07 00:39:30,100 views 22276 21572 发送响应块 23: 如
+DEBUG 2025-06-07 00:39:30,154 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='您'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=24, prompt_tokens=8, total_tokens=32, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=24, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,154 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u60a8"}
+INFO 2025-06-07 00:39:30,155 views 22276 21572 发送响应块 24: 您
+DEBUG 2025-06-07 00:39:30,208 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='有任何'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=25, prompt_tokens=8, total_tokens=33, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=25, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,209 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6709\u4efb\u4f55"}
+INFO 2025-06-07 00:39:30,209 views 22276 21572 发送响应块 25: 有任何
+DEBUG 2025-06-07 00:39:30,262 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='任何'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=26, prompt_tokens=8, total_tokens=34, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=26, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,262 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u4efb\u4f55"}
+INFO 2025-06-07 00:39:30,263 views 22276 21572 发送响应块 26: 任何
+DEBUG 2025-06-07 00:39:30,318 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='问题'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=27, prompt_tokens=8, total_tokens=35, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=27, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,318 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u95ee\u9898"}
+INFO 2025-06-07 00:39:30,318 views 22276 21572 发送响应块 27: 问题
+DEBUG 2025-06-07 00:39:30,370 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='，'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=28, prompt_tokens=8, total_tokens=36, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=28, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,371 views 22276 21572 发送思考过程数据: {"reasoning_content": "\uff0c"}
+INFO 2025-06-07 00:39:30,371 views 22276 21572 发送响应块 28: ，
+DEBUG 2025-06-07 00:39:30,425 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='我会'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=29, prompt_tokens=8, total_tokens=37, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=29, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,425 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6211\u4f1a"}
+INFO 2025-06-07 00:39:30,425 views 22276 21572 发送响应块 29: 我会
+DEBUG 2025-06-07 00:39:30,477 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='尽'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=30, prompt_tokens=8, total_tokens=38, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=30, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,477 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u5c3d"}
+INFO 2025-06-07 00:39:30,477 views 22276 21572 发送响应块 30: 尽
+DEBUG 2025-06-07 00:39:30,531 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='我'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=31, prompt_tokens=8, total_tokens=39, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=31, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,531 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6211"}
+INFO 2025-06-07 00:39:30,532 views 22276 21572 发送响应块 31: 我
+DEBUG 2025-06-07 00:39:30,584 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='所能'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=32, prompt_tokens=8, total_tokens=40, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=32, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,584 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u6240\u80fd"}
+INFO 2025-06-07 00:39:30,585 views 22276 21572 发送响应块 32: 所能
+DEBUG 2025-06-07 00:39:30,638 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='为您提供'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=33, prompt_tokens=8, total_tokens=41, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=33, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,639 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u4e3a\u60a8\u63d0\u4f9b"}
+INFO 2025-06-07 00:39:30,639 views 22276 21572 发送响应块 33: 为您提供
+DEBUG 2025-06-07 00:39:30,689 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='帮助'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=34, prompt_tokens=8, total_tokens=42, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=34, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,689 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u5e2e\u52a9"}
+INFO 2025-06-07 00:39:30,690 views 22276 21572 发送响应块 34: 帮助
+DEBUG 2025-06-07 00:39:30,741 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content=None, function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content='。\n'), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=35, prompt_tokens=8, total_tokens=43, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,741 views 22276 21572 发送思考过程数据: {"reasoning_content": "\u3002\n"}
+INFO 2025-06-07 00:39:30,742 views 22276 21572 发送响应块 35: 。
+
+DEBUG 2025-06-07 00:39:30,849 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='\n\n', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=36, prompt_tokens=8, total_tokens=44, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,850 views 22276 21572 发送回答数据: {"content": "\n\n"}
+INFO 2025-06-07 00:39:30,850 views 22276 21572 发送响应块 36: 
+
+
+DEBUG 2025-06-07 00:39:30,903 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='您好', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=37, prompt_tokens=8, total_tokens=45, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,903 views 22276 21572 发送回答数据: {"content": "\u60a8\u597d"}
+INFO 2025-06-07 00:39:30,904 views 22276 21572 发送响应块 37: 您好
+DEBUG 2025-06-07 00:39:30,960 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='！', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=38, prompt_tokens=8, total_tokens=46, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:30,960 views 22276 21572 发送回答数据: {"content": "\uff01"}
+INFO 2025-06-07 00:39:30,960 views 22276 21572 发送响应块 38: ！
+DEBUG 2025-06-07 00:39:31,012 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='我是', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=39, prompt_tokens=8, total_tokens=47, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,013 views 22276 21572 发送回答数据: {"content": "\u6211\u662f"}
+INFO 2025-06-07 00:39:31,013 views 22276 21572 发送响应块 39: 我是
+DEBUG 2025-06-07 00:39:31,068 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='由', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=40, prompt_tokens=8, total_tokens=48, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,068 views 22276 21572 发送回答数据: {"content": "\u7531"}
+INFO 2025-06-07 00:39:31,068 views 22276 21572 发送响应块 40: 由
+DEBUG 2025-06-07 00:39:31,117 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='中国的', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=41, prompt_tokens=8, total_tokens=49, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,118 views 22276 21572 发送回答数据: {"content": "\u4e2d\u56fd\u7684"}
+INFO 2025-06-07 00:39:31,118 views 22276 21572 发送响应块 41: 中国的
+DEBUG 2025-06-07 00:39:31,172 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='深度', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=42, prompt_tokens=8, total_tokens=50, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,173 views 22276 21572 发送回答数据: {"content": "\u6df1\u5ea6"}
+INFO 2025-06-07 00:39:31,173 views 22276 21572 发送响应块 42: 深度
+DEBUG 2025-06-07 00:39:31,225 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='求', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=43, prompt_tokens=8, total_tokens=51, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,225 views 22276 21572 发送回答数据: {"content": "\u6c42"}
+INFO 2025-06-07 00:39:31,225 views 22276 21572 发送响应块 43: 求
+DEBUG 2025-06-07 00:39:31,279 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='索', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=44, prompt_tokens=8, total_tokens=52, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,279 views 22276 21572 发送回答数据: {"content": "\u7d22"}
+INFO 2025-06-07 00:39:31,280 views 22276 21572 发送响应块 44: 索
+DEBUG 2025-06-07 00:39:31,332 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='（', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=45, prompt_tokens=8, total_tokens=53, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,332 views 22276 21572 发送回答数据: {"content": "\uff08"}
+INFO 2025-06-07 00:39:31,333 views 22276 21572 发送响应块 45: （
+DEBUG 2025-06-07 00:39:31,382 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='Deep', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=46, prompt_tokens=8, total_tokens=54, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,382 views 22276 21572 发送回答数据: {"content": "Deep"}
+INFO 2025-06-07 00:39:31,383 views 22276 21572 发送响应块 46: Deep
+DEBUG 2025-06-07 00:39:31,449 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='Seek', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=47, prompt_tokens=8, total_tokens=55, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,449 views 22276 21572 发送回答数据: {"content": "Seek"}
+INFO 2025-06-07 00:39:31,449 views 22276 21572 发送响应块 47: Seek
+DEBUG 2025-06-07 00:39:31,492 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='）', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=48, prompt_tokens=8, total_tokens=56, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,493 views 22276 21572 发送回答数据: {"content": "\uff09"}
+INFO 2025-06-07 00:39:31,493 views 22276 21572 发送响应块 48: ）
+DEBUG 2025-06-07 00:39:31,546 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='公司', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=49, prompt_tokens=8, total_tokens=57, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,547 views 22276 21572 发送回答数据: {"content": "\u516c\u53f8"}
+INFO 2025-06-07 00:39:31,547 views 22276 21572 发送响应块 49: 公司
+DEBUG 2025-06-07 00:39:31,600 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='开发', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=50, prompt_tokens=8, total_tokens=58, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,601 views 22276 21572 发送回答数据: {"content": "\u5f00\u53d1"}
+INFO 2025-06-07 00:39:31,601 views 22276 21572 发送响应块 50: 开发
+DEBUG 2025-06-07 00:39:31,655 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='的', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=51, prompt_tokens=8, total_tokens=59, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,655 views 22276 21572 发送回答数据: {"content": "\u7684"}
+INFO 2025-06-07 00:39:31,656 views 22276 21572 发送响应块 51: 的
+DEBUG 2025-06-07 00:39:31,710 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='智能', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=52, prompt_tokens=8, total_tokens=60, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,710 views 22276 21572 发送回答数据: {"content": "\u667a\u80fd"}
+INFO 2025-06-07 00:39:31,710 views 22276 21572 发送响应块 52: 智能
+DEBUG 2025-06-07 00:39:31,761 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='助手', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=53, prompt_tokens=8, total_tokens=61, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,762 views 22276 21572 发送回答数据: {"content": "\u52a9\u624b"}
+INFO 2025-06-07 00:39:31,762 views 22276 21572 发送响应块 53: 助手
+DEBUG 2025-06-07 00:39:31,813 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='Deep', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=54, prompt_tokens=8, total_tokens=62, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,813 views 22276 21572 发送回答数据: {"content": "Deep"}
+INFO 2025-06-07 00:39:31,814 views 22276 21572 发送响应块 54: Deep
+DEBUG 2025-06-07 00:39:31,863 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='Seek', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=55, prompt_tokens=8, total_tokens=63, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,864 views 22276 21572 发送回答数据: {"content": "Seek"}
+INFO 2025-06-07 00:39:31,864 views 22276 21572 发送响应块 55: Seek
+DEBUG 2025-06-07 00:39:31,917 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='-R', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=56, prompt_tokens=8, total_tokens=64, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,918 views 22276 21572 发送回答数据: {"content": "-R"}
+INFO 2025-06-07 00:39:31,918 views 22276 21572 发送响应块 56: -R
+DEBUG 2025-06-07 00:39:31,968 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='1', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=57, prompt_tokens=8, total_tokens=65, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:31,969 views 22276 21572 发送回答数据: {"content": "1"}
+INFO 2025-06-07 00:39:31,969 views 22276 21572 发送响应块 57: 1
+DEBUG 2025-06-07 00:39:32,017 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='。', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=58, prompt_tokens=8, total_tokens=66, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,018 views 22276 21572 发送回答数据: {"content": "\u3002"}
+INFO 2025-06-07 00:39:32,018 views 22276 21572 发送响应块 58: 。
+DEBUG 2025-06-07 00:39:32,071 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='如', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=59, prompt_tokens=8, total_tokens=67, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,071 views 22276 21572 发送回答数据: {"content": "\u5982"}
+INFO 2025-06-07 00:39:32,072 views 22276 21572 发送响应块 59: 如
+DEBUG 2025-06-07 00:39:32,124 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='您', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=60, prompt_tokens=8, total_tokens=68, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,125 views 22276 21572 发送回答数据: {"content": "\u60a8"}
+INFO 2025-06-07 00:39:32,125 views 22276 21572 发送响应块 60: 您
+DEBUG 2025-06-07 00:39:32,178 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='有任何', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=61, prompt_tokens=8, total_tokens=69, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,179 views 22276 21572 发送回答数据: {"content": "\u6709\u4efb\u4f55"}
+INFO 2025-06-07 00:39:32,179 views 22276 21572 发送响应块 61: 有任何
+DEBUG 2025-06-07 00:39:32,232 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='任何', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=62, prompt_tokens=8, total_tokens=70, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,233 views 22276 21572 发送回答数据: {"content": "\u4efb\u4f55"}
+INFO 2025-06-07 00:39:32,233 views 22276 21572 发送响应块 62: 任何
+DEBUG 2025-06-07 00:39:32,286 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='问题', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=63, prompt_tokens=8, total_tokens=71, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,287 views 22276 21572 发送回答数据: {"content": "\u95ee\u9898"}
+INFO 2025-06-07 00:39:32,287 views 22276 21572 发送响应块 63: 问题
+DEBUG 2025-06-07 00:39:32,344 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='，', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=64, prompt_tokens=8, total_tokens=72, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,344 views 22276 21572 发送回答数据: {"content": "\uff0c"}
+INFO 2025-06-07 00:39:32,344 views 22276 21572 发送响应块 64: ，
+DEBUG 2025-06-07 00:39:32,466 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='我会', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=65, prompt_tokens=8, total_tokens=73, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,467 views 22276 21572 发送回答数据: {"content": "\u6211\u4f1a"}
+INFO 2025-06-07 00:39:32,467 views 22276 21572 发送响应块 65: 我会
+DEBUG 2025-06-07 00:39:32,519 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='尽', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=66, prompt_tokens=8, total_tokens=74, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,519 views 22276 21572 发送回答数据: {"content": "\u5c3d"}
+INFO 2025-06-07 00:39:32,519 views 22276 21572 发送响应块 66: 尽
+DEBUG 2025-06-07 00:39:32,627 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='我', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=67, prompt_tokens=8, total_tokens=75, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,627 views 22276 21572 发送回答数据: {"content": "\u6211"}
+INFO 2025-06-07 00:39:32,628 views 22276 21572 发送响应块 67: 我
+DEBUG 2025-06-07 00:39:32,628 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='所能', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=68, prompt_tokens=8, total_tokens=76, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,628 views 22276 21572 发送回答数据: {"content": "\u6240\u80fd"}
+INFO 2025-06-07 00:39:32,628 views 22276 21572 发送响应块 68: 所能
+DEBUG 2025-06-07 00:39:32,681 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='为您提供', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=69, prompt_tokens=8, total_tokens=77, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,682 views 22276 21572 发送回答数据: {"content": "\u4e3a\u60a8\u63d0\u4f9b"}
+INFO 2025-06-07 00:39:32,682 views 22276 21572 发送响应块 69: 为您提供
+DEBUG 2025-06-07 00:39:32,736 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='帮助', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=70, prompt_tokens=8, total_tokens=78, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,736 views 22276 21572 发送回答数据: {"content": "\u5e2e\u52a9"}
+INFO 2025-06-07 00:39:32,737 views 22276 21572 发送响应块 70: 帮助
+DEBUG 2025-06-07 00:39:32,787 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='。', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason=None, index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=71, prompt_tokens=8, total_tokens=79, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+DEBUG 2025-06-07 00:39:32,788 views 22276 21572 发送回答数据: {"content": "\u3002"}
+INFO 2025-06-07 00:39:32,788 views 22276 21572 发送响应块 71: 。
+DEBUG 2025-06-07 00:39:32,841 views 22276 21572 收到原始响应块: ChatCompletionChunk(id='0197461d6e45f5f4a88e1d63bec1af21', choices=[Choice(delta=ChoiceDelta(content='', function_call=None, refusal=None, role='assistant', tool_calls=None, reasoning_content=None), finish_reason='stop', index=0, logprobs=None)], created=1749228023, model='deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', object='chat.completion.chunk', service_tier=None, system_fingerprint='', usage=CompletionUsage(completion_tokens=71, prompt_tokens=8, total_tokens=79, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=35, rejected_prediction_tokens=None), prompt_tokens_details=None))
+WARNING 2025-06-07 00:39:32,841 views 22276 21572 响应块没有有效内容
+INFO 2025-06-07 00:39:32,871 views 22276 21572 完整响应处理耗时: 4.76秒
+INFO 2025-06-07 00:39:32,872 views 22276 21572 总响应长度: 137 字符
+INFO 2025-06-07 00:39:32,872 views 22276 21572 总响应块数: 71
+INFO 2025-06-07 00:39:32,872 basehttp 22276 21572 "POST /api/chat/stream/ HTTP/1.1" 200 2617
+INFO 2025-06-07 00:39:32,885 basehttp 22276 3932 "GET /api/chat/applications/1/conversations/ HTTP/1.1" 200 24483
+WARNING 2025-06-07 00:39:32,893 log 22276 3932 Not Found: /api/chat/conversations/0b957d14-583b-4b38-b175-f143233d98a3/messages/
+WARNING 2025-06-07 00:39:32,894 basehttp 22276 3932 "GET /api/chat/conversations/0b957d14-583b-4b38-b175-f143233d98a3/messages/ HTTP/1.1" 404 5466
