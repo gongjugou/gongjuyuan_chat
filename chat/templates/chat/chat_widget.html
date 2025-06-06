@@ -202,13 +202,47 @@
                 const apiUrl = '{{ api_url }}';
                 const applicationId = '{{ application_id }}';
                 const currentConversationId = ref(null);
+                const isLoading = ref(false);
+
+                // 加载历史对话
+                const loadConversation = async (conversationId) => {
+                    try {
+                        isLoading.value = true;
+                        const response = await fetch(`${apiUrl}/api/chat/conversations/${conversationId}/messages/`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            messages.value = data;
+                            await nextTick();
+                            scrollToBottom();
+                        }
+                    } catch (error) {
+                        console.error('加载对话历史失败:', error);
+                        ElMessage.error('加载对话历史失败');
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                // 获取最近的对话
+                const loadRecentConversations = async () => {
+                    try {
+                        const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.length > 0) {
+                                currentConversationId.value = data[0].conversation_id;
+                                await loadConversation(data[0].conversation_id);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('加载对话列表失败:', error);
+                    }
+                };
 
                 const toggleChat = () => {
                     isOpen.value = !isOpen.value;
                     if (isOpen.value) {
-                        nextTick(() => {
-                            scrollToBottom();
-                        });
+                        loadRecentConversations();
                     }
                 };
 
@@ -220,14 +254,14 @@
 
                 const formatMessage = (content) => {
                     if (!content) return '';
-                    // 将换行符转换为<br>
                     return content.replace(/\n/g, '<br>');
                 };
 
                 const sendMessage = async () => {
-                    if (!newMessage.value.trim()) return;
+                    if (!newMessage.value.trim() || isLoading.value) return;
                     
                     try {
+                        isLoading.value = true;
                         const messageData = {
                             message: newMessage.value,
                             application_id: parseInt(applicationId),
@@ -324,6 +358,8 @@
                             role: 'assistant',
                             content: `发送消息失败: ${error.message}`
                         });
+                    } finally {
+                        isLoading.value = false;
                     }
                 };
 
@@ -336,6 +372,7 @@
                     messages,
                     newMessage,
                     messagesContainer,
+                    isLoading,
                     toggleChat,
                     sendMessage,
                     formatMessage
