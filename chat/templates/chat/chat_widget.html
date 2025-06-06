@@ -1,290 +1,229 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能客服</title>
-    <!-- 引入Element Plus样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
-    <!-- 引入Element Plus图标 -->
-    <link rel="stylesheet" href="https://unpkg.com/@element-plus/icons-vue/dist/index.css">
+    <!-- 使用阿里云CDN -->
+    <link rel="stylesheet" href="https://g.alicdn.com/code/lib/element-plus/2.4.4/theme-chalk/index.min.css">
+    <script src="https://g.alicdn.com/code/lib/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://g.alicdn.com/code/lib/element-plus/2.4.4/index.full.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-plus-icons-vue/2.1.0/index.iife.min.js"></script>
+    <script src="https://g.alicdn.com/code/lib/axios/1.6.2/axios.min.js"></script>
     <style>
         :root {
-            --el-color-primary: #409EFF;
+            --primary-color: #409EFF;
+            --border-color: #DCDFE6;
+            --text-color: #303133;
+            --text-color-secondary: #606266;
+            --background-color: #F5F7FA;
         }
-        
+
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        
+
         .chat-widget {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            width: 380px;
-            height: 600px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-            overflow: hidden;
         }
-        
-        .chat-header {
-            padding: 15px 20px;
-            background: var(--el-color-primary);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .chat-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 500;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f5f7fa;
-        }
-        
-        .message {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message.user {
-            align-items: flex-end;
-        }
-        
-        .message.assistant {
-            align-items: flex-start;
-        }
-        
-        .message-content {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.5;
-            word-break: break-word;
-        }
-        
-        .message.user .message-content {
-            background: var(--el-color-primary);
-            color: #fff;
-        }
-        
-        .message.assistant .message-content {
-            background: #fff;
-            color: #333;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .chat-input {
-            padding: 15px;
-            background: #fff;
-            border-top: 1px solid #e4e7ed;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .chat-input textarea {
-            flex: 1;
-            height: 40px;
-            padding: 8px 12px;
-            border: 1px solid #dcdfe6;
-            border-radius: 4px;
-            resize: none;
-            font-size: 14px;
-            line-height: 1.5;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        
-        .chat-input textarea:focus {
-            border-color: var(--el-color-primary);
-        }
-        
+
         .chat-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: var(--el-color-primary);
-            color: #fff;
+            background-color: var(--primary-color);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
-        
+
         .chat-button:hover {
             transform: scale(1.1);
         }
-        
-        .chat-button i {
-            font-size: 24px;
-        }
-        
-        .mobile-mode {
+
+        .chat-window {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1000;
-            background: #fff;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s;
         }
-        
-        .mobile-mode .chat-widget {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 0;
+
+        .chat-header {
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        .mobile-mode .chat-button {
-            display: none;
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: var(--background-color);
         }
-        
-        .el-button {
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-content {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background-color: white;
+            color: var(--text-color);
+        }
+
+        .chat-input {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .chat-input button {
             padding: 8px 15px;
-            font-size: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        
-        .el-button--primary {
-            background-color: var(--el-color-primary);
-            border-color: var(--el-color-primary);
+
+        .chat-input button:hover {
+            opacity: 0.9;
         }
-        
-        .el-button--primary:hover {
-            background-color: #66b1ff;
-            border-color: #66b1ff;
-        }
-        
-        .el-button--primary:active {
-            background-color: #3a8ee6;
-            border-color: #3a8ee6;
-        }
-        
-        .el-button.is-disabled {
-            background-color: #a0cfff;
-            border-color: #a0cfff;
-            cursor: not-allowed;
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .chat-window {
+                width: 100%;
+                height: 100%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+
+            .chat-button {
+                width: 50px;
+                height: 50px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- 聊天按钮 -->
-        <div class="chat-button" @click="toggleChat" v-if="!isMobileMode">
-            <i class="el-icon-chat-dot-round"></i>
-        </div>
-        
-        <!-- 聊天窗口 -->
-        <div class="chat-widget" :class="{ 'mobile-mode': isMobileMode }" v-show="isOpen">
-            <div class="chat-header">
-                <h3>智能客服</h3>
-                <div>
-                    <el-button type="text" @click="toggleHistory" v-if="!isMobileMode">
-                        <i class="el-icon-time"></i>
-                    </el-button>
-                    <el-button type="text" @click="toggleChat">
-                        <i class="el-icon-close"></i>
-                    </el-button>
-                </div>
+        <div class="chat-widget">
+            <div class="chat-button" @click="toggleChat">
+                <el-icon :size="24"><ChatDotRound /></el-icon>
             </div>
-            
-            <!-- 消息列表 -->
-            <div class="chat-messages" ref="messageContainer">
-                <div v-for="(message, index) in messages" 
-                     :key="index" 
-                     class="message"
-                     :class="message.role">
-                    <div class="message-content" v-html="formatMessage(message.content)"></div>
+            <div class="chat-window" v-if="isOpen">
+                <div class="chat-header">
+                    <span>智能客服</span>
+                    <el-icon :size="20" @click="toggleChat" style="cursor: pointer;"><Close /></el-icon>
                 </div>
-            </div>
-            
-            <!-- 输入区域 -->
-            <div class="chat-input">
-                <el-input
-                    v-model="newMessage"
-                    type="textarea"
-                    :rows="2"
-                    placeholder="请输入消息..."
-                    @keyup.enter.ctrl="sendMessage"
-                    resize="none"
-                ></el-input>
-                <el-button 
-                    type="primary" 
-                    :disabled="!newMessage.trim()"
-                    @click="sendMessage">
-                    发送
-                </el-button>
+                <div class="chat-messages" ref="messagesContainer">
+                    <div v-for="(message, index) in messages" 
+                         :key="index" 
+                         :class="['message', message.role]">
+                        <div class="message-content" v-html="formatMessage(message.content)"></div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" 
+                           v-model="newMessage" 
+                           @keyup.enter="sendMessage"
+                           placeholder="请输入消息...">
+                    <button @click="sendMessage">发送</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 引入Vue 3 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 引入Element Plus -->
-    <script src="https://unpkg.com/element-plus"></script>
-    <!-- 引入Element Plus图标 -->
-    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
-    
     <script>
         const { createApp, ref, nextTick, onMounted } = Vue;
         const { ElMessage } = ElementPlus;
-        
-        createApp({
+        const { ChatDotRound, Close } = ElementPlusIconsVue;
+
+        const app = createApp({
             setup() {
-                const apiUrl = '{{ api_url }}';
-                const applicationId = '{{ application_id }}';
                 const isOpen = ref(false);
-                const isMobileMode = ref(window.innerWidth <= 768);
                 const messages = ref([]);
                 const newMessage = ref('');
-                const messageContainer = ref(null);
+                const messagesContainer = ref(null);
+                const apiUrl = '{{ api_url }}';
+                const applicationId = '{{ application_id }}';
                 const currentConversationId = ref(null);
-                
-                // 检测是否为移动设备
-                const checkMobile = () => {
-                    isMobileMode.value = window.innerWidth <= 768;
-                };
-                
-                // 切换聊天窗口
+
                 const toggleChat = () => {
                     isOpen.value = !isOpen.value;
                     if (isOpen.value) {
-                        loadConversations();
+                        nextTick(() => {
+                            scrollToBottom();
+                        });
                     }
                 };
-                
-                // 切换历史记录
-                const toggleHistory = () => {
-                    // 实现历史记录切换逻辑
+
+                const scrollToBottom = () => {
+                    if (messagesContainer.value) {
+                        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+                    }
                 };
-                
-                // 发送消息
+
+                const formatMessage = (content) => {
+                    if (!content) return '';
+                    // 将换行符转换为<br>
+                    return content.replace(/\n/g, '<br>');
+                };
+
                 const sendMessage = async () => {
                     if (!newMessage.value.trim()) return;
                     
@@ -334,14 +273,17 @@
                             if (done) break;
                             
                             const chunk = decoder.decode(value);
-                            const lines = chunk.split('\n');
+                            console.log('收到数据块:', chunk);
                             
+                            const lines = chunk.split('\n');
                             for (const line of lines) {
                                 if (line.startsWith('data: ')) {
                                     const data = line.slice(6);
                                     if (data === '[DONE]') {
+                                        console.log('流式响应完成');
                                         break;
                                     }
+                                    
                                     try {
                                         const parsed = JSON.parse(data);
                                         if (parsed.error) {
@@ -350,9 +292,8 @@
                                         if (parsed.content) {
                                             assistantMessage += parsed.content;
                                             // 更新最后一条消息或添加新消息
-                                            const lastMessage = messages.value[messages.value.length - 1];
-                                            if (lastMessage && lastMessage.role === 'assistant') {
-                                                lastMessage.content = assistantMessage;
+                                            if (messages.value.length > 0 && messages.value[messages.value.length - 1].role === 'assistant') {
+                                                messages.value[messages.value.length - 1].content = assistantMessage;
                                             } else {
                                                 messages.value.push({
                                                     role: 'assistant',
@@ -364,89 +305,48 @@
                                         }
                                     } catch (e) {
                                         console.error('解析响应数据失败:', e);
-                                        throw e;
                                     }
                                 }
                             }
                         }
+                        
+                        // 如果没有收到任何响应，添加错误消息
+                        if (!assistantMessage) {
+                            messages.value.push({
+                                role: 'assistant',
+                                content: '抱歉，没有收到有效的响应。请稍后重试。'
+                            });
+                        }
+                        
                     } catch (error) {
                         console.error('发送消息失败:', error);
                         messages.value.push({
                             role: 'assistant',
-                            content: `抱歉，发送消息时出现错误：${error.message}`
+                            content: `发送消息失败: ${error.message}`
                         });
-                        await nextTick();
-                        scrollToBottom();
                     }
                 };
-                
-                // 加载对话历史
-                const loadConversations = async () => {
-                    try {
-                        const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.length > 0) {
-                                currentConversationId.value = data[0].conversation_id;
-                                // 加载第一条对话的消息
-                                await loadMessages(data[0].conversation_id);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('加载对话历史失败:', error);
-                        ElMessage.error('加载对话历史失败');
-                    }
-                };
-                
-                // 加载消息
-                const loadMessages = async (conversationId) => {
-                    try {
-                        const response = await fetch(`${apiUrl}/api/chat/conversations/${conversationId}/messages/`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            messages.value = data;
-                            await nextTick();
-                            scrollToBottom();
-                        }
-                    } catch (error) {
-                        console.error('加载消息失败:', error);
-                        ElMessage.error('加载消息失败');
-                    }
-                };
-                
-                // 滚动到底部
-                const scrollToBottom = () => {
-                    if (messageContainer.value) {
-                        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-                    }
-                };
-                
-                // 格式化消息内容（支持换行）
-                const formatMessage = (content) => {
-                    return content.replace(/\n/g, '<br>');
-                };
-                
-                // 监听窗口大小变化
-                window.addEventListener('resize', checkMobile);
-                
+
                 onMounted(() => {
-                    checkMobile();
+                    // 可以在这里添加初始化逻辑
                 });
-                
+
                 return {
                     isOpen,
-                    isMobileMode,
                     messages,
                     newMessage,
-                    messageContainer,
+                    messagesContainer,
                     toggleChat,
-                    toggleHistory,
                     sendMessage,
-                    scrollToBottom,
                     formatMessage
                 };
             }
-        }).use(ElementPlus).mount('#app');
+        });
+
+        app.use(ElementPlus);
+        app.component('ChatDotRound', ChatDotRound);
+        app.component('Close', Close);
+        app.mount('#app');
     </script>
 </body>
 </html> 

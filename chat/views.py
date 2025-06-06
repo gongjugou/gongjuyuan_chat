@@ -20,8 +20,11 @@ import json
 from openai import OpenAI
 from django.contrib.auth import get_user_model
 from django.conf import settings
+import time
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class ApplicationViewSet(ModelViewSet):
     """应用管理视图集"""
@@ -90,18 +93,23 @@ class ChatStreamView(View):
     流式聊天API接口
     """
     def post(self, request, *args, **kwargs):
+        start_time = time.time()
+        logger.info(f"开始处理请求: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
         try:
             data = json.loads(request.body)
-            print("收到的请求数据:", data)
+            logger.info(f"收到的请求数据: {data}")
             
             # 验证必要字段
             if not data.get('message'):
+                logger.error("消息内容为空")
                 return JsonResponse(
                     {"error": "消息内容不能为空"},
                     status=400
                 )
             
             if not data.get('application_id'):
+                logger.error("未指定应用ID")
                 return JsonResponse(
                     {"error": "请指定应用ID"},
                     status=400
@@ -113,7 +121,10 @@ class ChatStreamView(View):
                     id=data['application_id'],
                     is_active=True
                 )
+                logger.info(f"获取应用耗时: {time.time() - start_time:.2f}秒")
+                logger.info(f"应用信息: {application.name}, 模型: {application.model.name if application.model else 'None'}")
             except Application.DoesNotExist:
+                logger.error(f"应用不存在或未激活: {data['application_id']}")
                 return JsonResponse(
                     {"error": "应用不存在或未激活"},
                     status=404
@@ -122,6 +133,7 @@ class ChatStreamView(View):
             # 获取模型
             ai_model = application.model
             if not ai_model:
+                logger.error(f"应用未配置AI模型: {application.name}")
                 return JsonResponse(
                     {"error": "应用未配置AI模型"},
                     status=400
@@ -135,7 +147,9 @@ class ChatStreamView(View):
                         conversation_id=conversation_id,
                         user=request.user if request.user.is_authenticated else None
                     )
+                    logger.info(f"获取现有对话: {conversation_id}")
                 except ChatConversation.DoesNotExist:
+                    logger.error(f"会话不存在: {conversation_id}")
                     return JsonResponse(
                         {"error": "会话不存在"},
                         status=404
@@ -147,6 +161,9 @@ class ChatStreamView(View):
                     conversation_id=self.generate_conversation_id(),
                     title=data['message'][:50]
                 )
+                logger.info(f"创建新对话: {conversation.conversation_id}")
+            
+            logger.info(f"获取/创建对话耗时: {time.time() - start_time:.2f}秒")
             
             # 保存用户消息
             user_message = ChatMessage.objects.create(
@@ -155,13 +172,18 @@ class ChatStreamView(View):
                 content=data['message'],
                 tokens=len(data['message']) // 4
             )
+            logger.info(f"保存用户消息完成: {user_message.id}")
             
             def event_stream():
+                stream_start_time = time.time()
+                logger.info(f"开始流式响应: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                
                 try:
                     client = OpenAI(
                         base_url=ai_model.api_url,
                         api_key=ai_model.api_key
                     )
+                    logger.info(f"OpenAI客户端初始化完成，API URL: {ai_model.api_url}")
                     
                     # 准备消息
                     messages = self.prepare_messages(conversation)
@@ -170,6 +192,9 @@ class ChatStreamView(View):
                             "role": "system",
                             "content": application.system_role
                         })
+                    
+                    logger.info(f"准备消息耗时: {time.time() - stream_start_time:.2f}秒")
+                    logger.info(f"发送到OpenAI的消息: {messages}")
                     
                     # 创建助手消息
                     assistant_message = ChatMessage(
@@ -181,23 +206,73 @@ class ChatStreamView(View):
                     )
                     
                     # 调用OpenAI API
-                    response = client.chat.completions.create(
-                        model=ai_model.name,
-                        messages=messages,
-                        stream=True,
-                        temperature=data.get('temperature', 0.7),
-                        max_tokens=data.get('max_tokens', 2000)
-                    )
+                    api_start_time = time.time()
+                    logger.info(f"开始调用OpenAI API: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    
+                    try:
+                        response = client.chat.completions.create(
+                            model=ai_model.name,
+                            messages=messages,
+                            stream=True,
+                            temperature=data.get('temperature', 0.7),
+                            max_tokens=data.get('max_tokens', 2000)
+                        )
+                        logger.info(f"OpenAI API调用成功，开始接收流式响应")
+                    except Exception as e:
+                        logger.error(f"OpenAI API调用失败: {str(e)}")
+                        yield f"data: {json.dumps({'error': f'OpenAI API调用失败: {str(e)}'})}\n\n"
+                        return
+                    
+                    logger.info(f"OpenAI API调用耗时: {time.time() - api_start_time:.2f}秒")
                     
                     full_response = ""
-                    for chunk in response:
-                        if not chunk.choices:
-                            continue
+                    first_chunk_time = None
+                    chunk_count = 0
+                    
+                    try:
+                        for chunk in response:
+                            logger.debug(f"收到原始响应块: {chunk}")
                             
-                        if chunk.choices[0].delta.content:
-                            content = chunk.choices[0].delta.content
+                            if not chunk.choices:
+                                logger.warning("收到空的choices")
+                                continue
+                                
+                            # 检查是否有 reasoning_content
+                            if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
+                                content = chunk.choices[0].delta.reasoning_content
+                            # 检查是否有 content
+                            elif hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                                content = chunk.choices[0].delta.content
+                            else:
+                                logger.warning("响应块没有有效内容")
+                                continue
+                                
+                            if not content:
+                                logger.warning("收到空的content")
+                                continue
+                                
+                            if first_chunk_time is None:
+                                first_chunk_time = time.time()
+                                logger.info(f"收到第一个响应块耗时: {first_chunk_time - api_start_time:.2f}秒")
+                            
                             full_response += content
-                            yield f"data: {json.dumps({'content': content})}\n\n"
+                            chunk_count += 1
+                            logger.info(f"发送响应块 {chunk_count}: {content}")
+                            
+                            # 确保每个响应块都被正确发送
+                            response_data = json.dumps({'content': content})
+                            logger.debug(f"发送响应数据: {response_data}")
+                            yield f"data: {response_data}\n\n"
+                            
+                    except Exception as e:
+                        logger.error(f"处理流式响应时出错: {str(e)}")
+                        yield f"data: {json.dumps({'error': f'处理响应时出错: {str(e)}'})}\n\n"
+                        return
+                    
+                    if not full_response:
+                        logger.error("没有收到任何有效响应")
+                        yield f"data: {json.dumps({'error': '没有收到任何有效响应'})}\n\n"
+                        return
                     
                     # 保存助手消息
                     assistant_message.content = full_response
@@ -207,11 +282,15 @@ class ChatStreamView(View):
                     # 更新对话统计
                     conversation.update_stats()
                     
+                    logger.info(f"完整响应处理耗时: {time.time() - stream_start_time:.2f}秒")
+                    logger.info(f"总响应长度: {len(full_response)} 字符")
+                    logger.info(f"总响应块数: {chunk_count}")
+                    
                     yield "data: [DONE]\n\n"
                     
                 except Exception as e:
                     error_msg = f"请求处理错误: {str(e)}"
-                    print("OpenAI API错误:", error_msg)
+                    logger.error(f"OpenAI API错误: {error_msg}")
                     yield f"data: {json.dumps({'error': error_msg})}\n\n"
             
             response = StreamingHttpResponse(
@@ -223,26 +302,34 @@ class ChatStreamView(View):
             return response
             
         except json.JSONDecodeError:
+            logger.error("无效的JSON数据")
             return JsonResponse(
                 {"error": "无效的JSON数据"},
                 status=400
             )
         except Exception as e:
+            logger.error(f"处理请求时发生错误: {str(e)}")
             return JsonResponse(
                 {"error": str(e)},
                 status=500
             )
     
     def prepare_messages(self, conversation):
+        """准备发送给OpenAI的消息列表"""
         messages = []
-        history_messages = conversation.messages.order_by('timestamp')[:10]
         
+        # 获取最近的对话历史，包括最新的消息
+        history_messages = conversation.messages.order_by('-timestamp')[:10]
+        history_messages = list(reversed(history_messages))  # 反转顺序，确保按时间顺序排列
+        
+        # 添加历史消息
         for msg in history_messages:
             messages.append({
                 "role": msg.role,
                 "content": msg.content
             })
         
+        logger.info(f"准备的消息列表: {messages}")
         return messages
     
     def generate_conversation_id(self):
