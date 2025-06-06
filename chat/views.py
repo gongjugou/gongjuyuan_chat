@@ -240,9 +240,15 @@ class ChatStreamView(View):
                             # 检查是否有 reasoning_content
                             if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
                                 content = chunk.choices[0].delta.reasoning_content
+                                response_data = json.dumps({'reasoning_content': content})
+                                logger.debug(f"发送思考过程数据: {response_data}")
+                                yield f"data: {response_data}\n\n"
                             # 检查是否有 content
                             elif hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
                                 content = chunk.choices[0].delta.content
+                                response_data = json.dumps({'content': content})
+                                logger.debug(f"发送回答数据: {response_data}")
+                                yield f"data: {response_data}\n\n"
                             else:
                                 logger.warning("响应块没有有效内容")
                                 continue
@@ -258,11 +264,6 @@ class ChatStreamView(View):
                             full_response += content
                             chunk_count += 1
                             logger.info(f"发送响应块 {chunk_count}: {content}")
-                            
-                            # 确保每个响应块都被正确发送
-                            response_data = json.dumps({'content': content})
-                            logger.debug(f"发送响应数据: {response_data}")
-                            yield f"data: {response_data}\n\n"
                             
                     except Exception as e:
                         logger.error(f"处理流式响应时出错: {str(e)}")

@@ -17,6 +17,8 @@
             --text-color: #303133;
             --text-color-secondary: #606266;
             --background-color: #F5F7FA;
+            --thinking-bg: #F0F9EB;
+            --thinking-border: #E1F3D8;
         }
 
         body {
@@ -113,6 +115,36 @@
             color: var(--text-color);
         }
 
+        .thinking-process {
+            margin-top: 8px;
+            padding: 10px;
+            background-color: var(--thinking-bg);
+            border: 1px solid var(--thinking-border);
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--text-color-secondary);
+        }
+
+        .thinking-process::before {
+            content: "思考过程：";
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .final-answer {
+            margin-top: 8px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .final-answer::before {
+            content: "最终回答：";
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
         .chat-input {
             padding: 15px;
             background-color: white;
@@ -174,7 +206,7 @@
                     <div v-for="(message, index) in messages" 
                          :key="index" 
                          :class="['message', message.role]">
-                        <div class="message-content" v-html="formatMessage(message.content)"></div>
+                        <div class="message-content" v-html="formatMessage(message.content, message.isThinking)"></div>
                     </div>
                 </div>
                 <div class="chat-input">
@@ -252,9 +284,13 @@
                     }
                 };
 
-                const formatMessage = (content) => {
+                const formatMessage = (content, isThinking = false) => {
                     if (!content) return '';
-                    return content.replace(/\n/g, '<br>');
+                    const formattedContent = content.replace(/\n/g, '<br>');
+                    if (isThinking) {
+                        return `<div class="thinking-process">${formattedContent}</div>`;
+                    }
+                    return formattedContent;
                 };
 
                 const sendMessage = async () => {
@@ -301,6 +337,8 @@
                         const reader = response.body.getReader();
                         const decoder = new TextDecoder();
                         let assistantMessage = '';
+                        let thinkingContent = '';
+                        let isThinking = false;
                         
                         while (true) {
                             const {value, done} = await reader.read();
@@ -323,20 +361,53 @@
                                         if (parsed.error) {
                                             throw new Error(parsed.error);
                                         }
-                                        if (parsed.content) {
-                                            assistantMessage += parsed.content;
-                                            // 更新最后一条消息或添加新消息
-                                            if (messages.value.length > 0 && messages.value[messages.value.length - 1].role === 'assistant') {
-                                                messages.value[messages.value.length - 1].content = assistantMessage;
+                                        
+                                        // 处理思考过程
+                                        if (parsed.reasoning_content) {
+                                            isThinking = true;
+                                            thinkingContent += parsed.reasoning_content;
+                                            // 更新或添加思考过程消息
+                                            if (messages.value.length > 0 && 
+                                                messages.value[messages.value.length - 1].role === 'assistant' &&
+                                                messages.value[messages.value.length - 1].isThinking) {
+                                                messages.value[messages.value.length - 1].content = thinkingContent;
                                             } else {
                                                 messages.value.push({
                                                     role: 'assistant',
-                                                    content: assistantMessage
+                                                    content: thinkingContent,
+                                                    isThinking: true
                                                 });
                                             }
-                                            await nextTick();
-                                            scrollToBottom();
                                         }
+                                        // 处理最终回答
+                                        else if (parsed.content) {
+                                            if (isThinking) {
+                                                // 如果之前有思考过程，添加最终回答
+                                                messages.value.push({
+                                                    role: 'assistant',
+                                                    content: parsed.content,
+                                                    isThinking: false
+                                                });
+                                                isThinking = false;
+                                            } else {
+                                                assistantMessage += parsed.content;
+                                                // 更新最后一条消息或添加新消息
+                                                if (messages.value.length > 0 && 
+                                                    messages.value[messages.value.length - 1].role === 'assistant' &&
+                                                    !messages.value[messages.value.length - 1].isThinking) {
+                                                    messages.value[messages.value.length - 1].content = assistantMessage;
+                                                } else {
+                                                    messages.value.push({
+                                                        role: 'assistant',
+                                                        content: assistantMessage,
+                                                        isThinking: false
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        
+                                        await nextTick();
+                                        scrollToBottom();
                                     } catch (e) {
                                         console.error('解析响应数据失败:', e);
                                     }
@@ -345,10 +416,11 @@
                         }
                         
                         // 如果没有收到任何响应，添加错误消息
-                        if (!assistantMessage) {
+                        if (!assistantMessage && !thinkingContent) {
                             messages.value.push({
                                 role: 'assistant',
-                                content: '抱歉，没有收到有效的响应。请稍后重试。'
+                                content: '抱歉，没有收到有效的响应。请稍后重试。',
+                                isThinking: false
                             });
                         }
                         
@@ -356,7 +428,8 @@
                         console.error('发送消息失败:', error);
                         messages.value.push({
                             role: 'assistant',
-                            content: `发送消息失败: ${error.message}`
+                            content: `发送消息失败: ${error.message}`,
+                            isThinking: false
                         });
                     } finally {
                         isLoading.value = false;
