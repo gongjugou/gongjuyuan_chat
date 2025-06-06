@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            margin-left: auto;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 10px 0 10px 10px;
+        }
+
+        .message.assistant {
+            margin-right: auto;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 0 10px 10px 10px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .chat-input button {
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background: #45a049;
+        }
+
+        .close-button {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .history-button {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .mobile-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+        }
+
+        .mobile-mode .chat-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chat-widget" :class="{ 'mobile-mode': isMobileMode }">
+            <div v-if="!isOpen" class="chat-button" @click="openChat">
+                <span>💬</span>
+            </div>
+            <div v-else class="chat-window">
+                <div class="chat-header">
+                    <span class="history-button" @click="showHistory = !showHistory">📋</span>
+                    <span>智能客服</span>
+                    <span class="close-button" @click="closeChat">×</span>
+                </div>
+                <div v-if="showHistory" class="chat-history">
+                    <div v-for="conv in conversations" :key="conv.id" @click="loadConversation(conv)">
+                        {{ conv.title }}
+                    </div>
+                </div>
+                <div v-else class="chat-messages" ref="messages">
+                    <div v-for="msg in messages" :key="msg.id" 
+                         :class="['message', msg.role]">
+                        {{ msg.content }}
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" v-model="newMessage" 
+                           @keyup.enter="sendMessage" 
+                           placeholder="输入消息...">
+                    <button @click="sendMessage">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                isOpen: false,
+                showHistory: false,
+                isMobileMode: false,
+                newMessage: '',
+                messages: [],
+                conversations: [],
+                currentConversationId: null,
+                apiUrl: '{{ api_url }}',
+                applicationId: '{{ application_id }}'
+            },
+            mounted() {
+                // 检查URL参数，设置移动端模式
+                const urlParams = new URLSearchParams(window.location.search);
+                this.isMobileMode = urlParams.get('mode') === 'mobile';
+                
+                // 加载对话历史
+                this.loadConversations();
+            },
+            methods: {
+                openChat() {
+                    this.isOpen = true;
+                },
+                closeChat() {
+                    this.isOpen = false;
+                    this.showHistory = false;
+                },
+                async loadConversations() {
+                    try {
+                        const response = await axios.get(`${this.apiUrl}/api/chat/applications/${this.applicationId}/conversations/`);
+                        this.conversations = response.data;
+                    } catch (error) {
+                        console.error('加载对话历史失败:', error);
+                    }
+                },
+                async loadConversation(conversation) {
+                    try {
+                        const response = await axios.get(`${this.apiUrl}/api/chat/conversations/${conversation.id}/messages/`);
+                        this.messages = response.data;
+                        this.currentConversationId = conversation.id;
+                        this.showHistory = false;
+                        this.$nextTick(() => {
+                            this.scrollToBottom();
+                        });
+                    } catch (error) {
+                        console.error('加载对话失败:', error);
+                    }
+                },
+                async sendMessage() {
+                    if (!this.newMessage.trim()) return;
+
+                    try {
+                        const messageData = {
+                            message: this.newMessage,
+                            application_id: parseInt(this.applicationId),
+                            conversation_id: this.currentConversationId,
+                            temperature: 0.7,
+                            max_tokens: 2000
+                        };
+
+                        console.log('发送的消息数据:', messageData);
+
+                        // 添加用户消息到界面
+                        this.messages.push({
+                            role: 'user',
+                            content: this.newMessage
+                        });
+                        this.newMessage = '';
+                        this.$nextTick(() => {
+                            this.scrollToBottom();
+                        });
+
+                        const response = await fetch(`${this.apiUrl}/api/chat/stream/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'text/event-stream',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify(messageData)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                        }
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let assistantMessage = '';
+
+                        while (true) {
+                            const {value, done} = await reader.read();
+                            if (done) break;
+                            
+                            const chunk = decoder.decode(value);
+                            const lines = chunk.split('\n');
+                            
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.slice(6);
+                                    if (data === '[DONE]') {
+                                        break;
+                                    }
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        if (parsed.error) {
+                                            throw new Error(parsed.error);
+                                        }
+                                        if (parsed.content) {
+                                            assistantMessage += parsed.content;
+                                            this.messages.push({
+                                                role: 'assistant',
+                                                content: assistantMessage
+                                            });
+                                            this.$nextTick(() => {
+                                                this.scrollToBottom();
+                                            });
+                                        }
+                                    } catch (e) {
+                                        console.error('解析响应数据失败:', e);
+                                        throw e;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('发送消息失败:', error);
+                        this.messages.push({
+                            role: 'assistant',
+                            content: `抱歉，发送消息时出现错误：${error.message}`
+                        });
+                    }
+                },
+                scrollToBottom() {
+                    const messages = this.$refs.messages;
+                    if (messages) {
+                        messages.scrollTop = messages.scrollHeight;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db.models import Count, Sum
 from django.utils.html import format_html
-from .models import AIModel, ChatConversation, ChatMessage, ModelUsageStat
+from .models import AIModel, ChatConversation, ChatMessage, ModelUsageStat, Application
 
 # 自定义过滤器
 class ActiveModelFilter(admin.SimpleListFilter):
@@ -21,6 +21,22 @@ class ActiveModelFilter(admin.SimpleListFilter):
         if self.value() == 'no':
             return queryset.filter(is_active=False)
 
+class PublicFilter(admin.SimpleListFilter):
+    title = '公开状态'
+    parameter_name = 'is_public'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', '公开'),
+            ('no', '私有'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(is_public=True)
+        if self.value() == 'no':
+            return queryset.filter(is_public=False)
+
 # 内联管理类
 class ChatMessageInline(admin.TabularInline):
     model = ChatMessage
@@ -35,6 +51,19 @@ class ChatMessageInline(admin.TabularInline):
     def has_add_permission(self, request, obj=None):
         return False
 
+class ChatConversationInline(admin.TabularInline):
+    model = ChatConversation
+    extra = 0
+    readonly_fields = ('conversation_id', 'title', 'created_at', 'message_count', 'total_tokens')
+    fields = ('conversation_id', 'title', 'created_at', 'message_count', 'total_tokens')
+    
+    def message_count(self, obj):
+        return obj.messages.count()
+    message_count.short_description = '消息数'
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+
 class ModelUsageStatInline(admin.TabularInline):
     model = ModelUsageStat
     extra = 0
@@ -44,6 +73,45 @@ class ModelUsageStatInline(admin.TabularInline):
         return False
 
 # 主管理类
+@admin.register(Application)
+class ApplicationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'model', 'is_public', 'show_reasoning', 'conversation_count', 'created_at')
+    list_filter = (ActiveModelFilter, PublicFilter, 'show_reasoning', 'created_at')
+    search_fields = ('name', 'description', 'system_role')
+    readonly_fields = ('created_at', 'updated_at', 'conversation_count', 'total_tokens')
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('name', 'description', 'user', 'is_active', 'is_public')
+        }),
+        ('模型设置', {
+            'fields': ('model', 'system_role', 'show_reasoning'),
+            'classes': ('collapse',)
+        }),
+        ('统计信息', {
+            'fields': ('conversation_count', 'total_tokens'),
+            'classes': ('collapse',)
+        }),
+        ('时间信息', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    inlines = [ChatConversationInline]
+    
+    def conversation_count(self, obj):
+        return obj.conversations.count()
+    conversation_count.short_description = '对话数'
+    
+    def total_tokens(self, obj):
+        total = obj.conversations.aggregate(total=Sum('total_tokens'))['total'] or 0
+        return f"{total:,} tokens"
+    total_tokens.short_description = '总token数'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            conversation_count=Count('conversations')
+        )
+
 @admin.register(AIModel)
 class AIModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'model_type_display', 'api_url_short', 'is_active', 'created_at', 'usage_stats')

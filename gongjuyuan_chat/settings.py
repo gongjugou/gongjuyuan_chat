@@ -42,7 +42,6 @@ INSTALLED_APPS = [
 
     'rest_framework', # 添加rest_framework
     'rest_framework.authtoken', # 添加rest_framework.authtoken
-    'models_manager', # 添加models_manager
     'chat', # 添加chat
     'corsheaders', # 添加corsheaders
 ]

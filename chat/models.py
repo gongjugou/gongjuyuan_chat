@@ -74,13 +74,70 @@ class AIModel(models.Model):
         output_cost = (output_tokens / 1000) * self.output_token_price
         return round(input_cost + output_cost, 6)
 
+class Application(models.Model):
+    """用户创建的应用"""
+    name = models.CharField(max_length=100, verbose_name="应用名称")
+    description = models.TextField(verbose_name="应用描述", blank=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='applications',
+        verbose_name="创建者",
+        null=True,
+        blank=True
+    )
+    model = models.ForeignKey(
+        AIModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="使用的模型"
+    )
+    system_role = models.TextField(
+        verbose_name="系统角色",
+        blank=True,
+        help_text="设置AI助手的角色和行为"
+    )
+    show_reasoning = models.BooleanField(
+        default=False,
+        verbose_name="显示思考过程"
+    )
+    is_public = models.BooleanField(
+        default=False,
+        verbose_name="是否公开",
+        help_text="公开的应用可以被所有用户查看和使用"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    is_active = models.BooleanField(default=True, verbose_name="是否激活")
+    
+    class Meta:
+        verbose_name = "应用"
+        verbose_name_plural = "应用"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.user.username if self.user else '匿名用户'})"
+
 class ChatConversation(models.Model):
     """用户对话会话记录"""
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE, 
         related_name='conversations',
-        verbose_name="用户"
+        verbose_name="用户",
+        null=True,
+        blank=True
+    )
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='conversations',
+        verbose_name="所属应用",
+        null=True,
+        blank=True
     )
     conversation_id = models.CharField(
         max_length=64, 
@@ -135,7 +192,8 @@ class ChatConversation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} - {self.title or '未命名对话'}"
+        user_str = f"{self.user.username} - " if self.user else "匿名用户 - "
+        return f"{user_str}{self.title or '未命名对话'}"
 
     def update_stats(self):
         """更新会话的统计信息"""
