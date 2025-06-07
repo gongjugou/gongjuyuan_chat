@@ -30,6 +30,7 @@ from datetime import datetime
 from wsgiref.util import FileWrapper
 import io
 from django.http import Http404
+from django.template import Template, Context
 
 User = get_user_model()
 logger = logging.getLogger(__name__)

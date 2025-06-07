@@ -14,6 +14,7 @@ urlpatterns = [
          views.DesignView.as_view(), 
          name='design_page'),
     
+  
     # 应用相关
     path('applications/<int:application_id>/', 
          views.ApplicationDetailView.as_view(), 
