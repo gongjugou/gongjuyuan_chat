@@ -14,7 +14,8 @@ from django.views import View
 from .models import ChatConversation, ChatMessage, AIModel, Application
 from .serializers import (
     ChatRequestSerializer, ApplicationSerializer, 
-    ApplicationCreateSerializer, ChatConversationSerializer
+    ApplicationCreateSerializer, ChatConversationSerializer,
+    ChatMessageSerializer
 )
 import json
 from openai import OpenAI
@@ -22,13 +23,15 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 import time
 import logging
+import traceback
+import uuid
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 class ApplicationViewSet(ModelViewSet):
     """应用管理视图集"""
-    queryset = Application.objects.filter(is_active=True)
+    queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     
     def get_permissions(self):
@@ -65,11 +68,79 @@ class ApplicationViewSet(ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def conversations(self, request, pk=None):
-        """获取应用的对话列表"""
-        application = self.get_object()
-        conversations = application.conversations.all()
-        serializer = ChatConversationSerializer(conversations, many=True)
-        return Response(serializer.data)
+        try:
+            logger.info(f"开始获取对话列表 - 应用ID: {pk}")
+            application = self.get_object()
+            logger.info(f"找到应用: {application.name}")
+            
+            session_id = request.query_params.get('session_id')
+            logger.info(f"会话ID: {session_id}")
+            
+            if not session_id:
+                logger.warning("未提供会话ID")
+                return Response([], status=status.HTTP_200_OK)
+            
+            try:
+                # 使用 application.conversations 反向关系查询
+                conversations = application.conversations.filter(
+                    session_id=session_id,
+                    is_active=True
+                ).order_by('-updated_at')
+                
+                logger.info(f"找到 {conversations.count()} 个对话")
+                for conv in conversations:
+                    logger.info(f"对话ID: {conv.conversation_id}, 标题: {conv.title}, 会话ID: {conv.session_id}")
+                
+                # 检查序列化器
+                try:
+                    serializer = ChatConversationSerializer(conversations, many=True)
+                    data = serializer.data
+                    logger.info(f"序列化后的数据: {data}")
+                    return Response(data)
+                except Exception as e:
+                    logger.error(f"序列化数据时发生错误: {str(e)}")
+                    error_stack = traceback.format_exc()
+                    logger.error(f"错误堆栈: {error_stack}")
+                    return Response(
+                        {
+                            "error": "序列化数据时发生错误",
+                            "detail": str(e),
+                            "stack": error_stack
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+                
+            except Exception as e:
+                logger.error(f"查询对话时发生错误: {str(e)}")
+                error_stack = traceback.format_exc()
+                logger.error(f"错误堆栈: {error_stack}")
+                return Response(
+                    {
+                        "error": "查询对话时发生错误",
+                        "detail": str(e),
+                        "stack": error_stack
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+        except Application.DoesNotExist:
+            logger.error(f"应用不存在: {pk}")
+            return Response(
+                {"error": "应用不存在"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"获取对话列表时发生错误: {str(e)}")
+            error_stack = traceback.format_exc()
+            logger.error(f"错误堆栈: {error_stack}")
+            return Response(
+                {
+                    "error": "获取对话列表时发生错误",
+                    "detail": str(e),
+                    "stack": error_stack
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def retrieve(self, request, *args, **kwargs):
         """自定义详情页面的显示"""
@@ -98,45 +169,19 @@ class ChatStreamView(View):
         
         try:
             data = json.loads(request.body)
-            logger.info(f"收到的请求数据: {data}")
+            session_id = data.get('session_id')
+            logger.info(f"收到聊天请求 - 会话ID: {session_id}")
             
-            # 验证必要字段
-            if not data.get('message'):
-                logger.error("消息内容为空")
-                return JsonResponse(
-                    {"error": "消息内容不能为空"},
-                    status=400
-                )
-            
-            if not data.get('application_id'):
-                logger.error("未指定应用ID")
-                return JsonResponse(
-                    {"error": "请指定应用ID"},
-                    status=400
-                )
-            
-            # 获取应用
+            # 验证应用
+            application_id = data.get('application_id')
             try:
-                application = Application.objects.get(
-                    id=data['application_id'],
-                    is_active=True
-                )
-                logger.info(f"获取应用耗时: {time.time() - start_time:.2f}秒")
-                logger.info(f"应用信息: {application.name}, 模型: {application.model.name if application.model else 'None'}")
+                application = Application.objects.get(id=application_id, is_active=True)
+                logger.info(f"找到应用: {application.name}")
             except Application.DoesNotExist:
-                logger.error(f"应用不存在或未激活: {data['application_id']}")
+                logger.error(f"应用不存在: {application_id}")
                 return JsonResponse(
                     {"error": "应用不存在或未激活"},
                     status=404
-                )
-            
-            # 获取模型
-            ai_model = application.model
-            if not ai_model:
-                logger.error(f"应用未配置AI模型: {application.name}")
-                return JsonResponse(
-                    {"error": "应用未配置AI模型"},
-                    status=400
                 )
             
             # 获取或创建对话
@@ -145,23 +190,24 @@ class ChatStreamView(View):
                 try:
                     conversation = ChatConversation.objects.get(
                         conversation_id=conversation_id,
-                        user=request.user if request.user.is_authenticated else None
+                        session_id=session_id
                     )
-                    logger.info(f"获取现有对话: {conversation_id}")
+                    logger.info(f"找到现有对话: {conversation.title}")
                 except ChatConversation.DoesNotExist:
-                    logger.error(f"会话不存在: {conversation_id}")
+                    logger.error(f"对话不存在: {conversation_id}")
                     return JsonResponse(
                         {"error": "会话不存在"},
                         status=404
                     )
             else:
                 conversation = ChatConversation.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
+                    session_id=session_id,
                     application=application,
                     conversation_id=self.generate_conversation_id(),
-                    title=data['message'][:50]
+                    title=data['message'][:50],
+                    model=application.model
                 )
-                logger.info(f"创建新对话: {conversation.conversation_id}")
+                logger.info(f"创建新对话: {conversation.title}")
             
             logger.info(f"获取/创建对话耗时: {time.time() - start_time:.2f}秒")
             
@@ -170,7 +216,8 @@ class ChatStreamView(View):
                 conversation=conversation,
                 role='user',
                 content=data['message'],
-                tokens=len(data['message']) // 4
+                tokens=len(data['message']) // 4,
+                model_used=application.model  # 设置消息使用的模型
             )
             logger.info(f"保存用户消息完成: {user_message.id}")
             
@@ -180,10 +227,10 @@ class ChatStreamView(View):
                 
                 try:
                     client = OpenAI(
-                        base_url=ai_model.api_url,
-                        api_key=ai_model.api_key
+                        base_url=application.model.api_url,
+                        api_key=application.model.api_key
                     )
-                    logger.info(f"OpenAI客户端初始化完成，API URL: {ai_model.api_url}")
+                    logger.info(f"OpenAI客户端初始化完成，API URL: {application.model.api_url}")
                     
                     # 准备消息
                     messages = self.prepare_messages(conversation)
@@ -200,7 +247,7 @@ class ChatStreamView(View):
                     assistant_message = ChatMessage(
                         conversation=conversation,
                         role='assistant',
-                        model_used=ai_model,
+                        model_used=application.model,
                         temperature=data.get('temperature', 0.7),
                         max_tokens=data.get('max_tokens', 2000)
                     )
@@ -211,7 +258,7 @@ class ChatStreamView(View):
                     
                     try:
                         response = client.chat.completions.create(
-                            model=ai_model.name,
+                            model=application.model.name,
                             messages=messages,
                             stream=True,
                             temperature=data.get('temperature', 0.7),
@@ -319,6 +366,17 @@ class ChatStreamView(View):
         """准备发送给OpenAI的消息列表"""
         messages = []
         
+        # 添加系统消息（如果有）
+        if conversation.application and conversation.application.system_role:
+            messages.append({
+                "role": "system",
+                "content": conversation.application.system_role
+            })
+        
+        # 如果是新对话，直接返回系统消息
+        if not conversation.messages.exists():
+            return messages
+        
         # 获取最近的对话历史，包括最新的消息
         history_messages = conversation.messages.order_by('-timestamp')[:10]
         history_messages = list(reversed(history_messages))  # 反转顺序，确保按时间顺序排列
@@ -334,7 +392,6 @@ class ChatStreamView(View):
         return messages
     
     def generate_conversation_id(self):
-        import uuid
         return str(uuid.uuid4())
 
 def chat_widget(request, application_id):
@@ -351,3 +408,43 @@ def chat_widget(request, application_id):
             {"error": "应用不存在或未激活"},
             status=status.HTTP_404_NOT_FOUND
         )
+
+class ChatMessageView(APIView):
+    """处理聊天消息的视图"""
+    permission_classes = [AllowAny]
+    
+    def get(self, request, conversation_id):
+        try:
+            session_id = request.query_params.get('session_id')
+            logger.info(f"获取消息历史 - 对话ID: {conversation_id}, 会话ID: {session_id}")
+            
+            if not session_id:
+                logger.warning("未提供会话ID")
+                return Response(
+                    {"error": "需要提供会话ID"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            conversation = ChatConversation.objects.get(
+                conversation_id=conversation_id,
+                session_id=session_id
+            )
+            
+            messages = conversation.messages.all().order_by('timestamp')
+            logger.info(f"找到 {messages.count()} 条消息")
+            
+            serializer = ChatMessageSerializer(messages, many=True)
+            return Response(serializer.data)
+            
+        except ChatConversation.DoesNotExist:
+            logger.error(f"对话不存在: {conversation_id}")
+            return Response(
+                {"error": "对话不存在"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"获取消息历史时发生错误: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

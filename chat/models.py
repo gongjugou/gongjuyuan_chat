@@ -131,6 +131,13 @@ class ChatConversation(models.Model):
         null=True,
         blank=True
     )
+    session_id = models.CharField(
+        max_length=64,
+        verbose_name="会话标识符",
+        null=True,
+        blank=True,
+        db_index=True
+    )
     application = models.ForeignKey(
         Application,
         on_delete=models.CASCADE,

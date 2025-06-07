@@ -19,6 +19,9 @@
             --background-color: #F5F7FA;
             --thinking-bg: #F0F9EB;
             --thinking-border: #E1F3D8;
+            --hover-color: #ecf5ff;
+            --active-color: #409EFF;
+            --shadow-color: rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -44,12 +47,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
             transition: all 0.3s;
         }
 
         .chat-button:hover {
             transform: scale(1.1);
+            box-shadow: 0 6px 16px var(--shadow-color);
         }
 
         .chat-window {
@@ -59,8 +63,8 @@
             width: 380px;
             height: 600px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px var(--shadow-color);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -68,24 +72,25 @@
         }
 
         .chat-header {
-            padding: 15px;
+            padding: 16px;
             background-color: var(--primary-color);
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 8px var(--shadow-color);
         }
 
         .chat-header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .chat-header-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .chat-content {
@@ -95,50 +100,57 @@
         }
 
         .chat-sidebar {
-            width: 200px;
+            width: 240px;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             background-color: var(--background-color);
+            transition: all 0.3s;
         }
 
         .chat-sidebar-header {
-            padding: 10px;
+            padding: 16px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background-color: white;
         }
 
         .chat-sidebar-content {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 12px;
         }
 
         .conversation-item {
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             transition: all 0.3s;
+            background-color: white;
+            border: 1px solid var(--border-color);
         }
 
         .conversation-item:hover {
-            background-color: rgba(64, 158, 255, 0.1);
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
         }
 
         .conversation-item.active {
-            background-color: rgba(64, 158, 255, 0.2);
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
         }
 
         .conversation-title {
             font-size: 14px;
             color: var(--text-color);
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-weight: 500;
         }
 
         .conversation-time {
@@ -150,19 +162,26 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            background-color: var(--background-color);
         }
 
         .chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 16px;
             overflow-y: auto;
             background-color: var(--background-color);
         }
 
         .message {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.user {
@@ -175,10 +194,11 @@
 
         .message-content {
             max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px var(--shadow-color);
+            line-height: 1.5;
         }
 
         .message.user .message-content {
@@ -193,66 +213,85 @@
 
         .thinking-process {
             margin-top: 8px;
-            padding: 10px;
+            padding: 12px;
             background-color: var(--thinking-bg);
             border: 1px solid var(--thinking-border);
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 0.9em;
             color: var(--text-color-secondary);
+            line-height: 1.5;
         }
 
         .thinking-process::before {
             content: "思考过程：";
             font-weight: bold;
             color: var(--text-color);
+            display: block;
+            margin-bottom: 4px;
         }
 
         .final-answer {
             margin-top: 8px;
-            padding: 10px;
+            padding: 12px;
             background-color: white;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 8px;
+            line-height: 1.5;
         }
 
         .final-answer::before {
             content: "最终回答：";
             font-weight: bold;
             color: var(--text-color);
+            display: block;
+            margin-bottom: 4px;
         }
 
         .chat-input {
-            padding: 15px;
+            padding: 16px;
             background-color: white;
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: 0 -2px 8px var(--shadow-color);
         }
 
         .chat-input input {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 8px;
             outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
         }
 
         .chat-input button {
-            padding: 8px 15px;
+            padding: 10px 20px;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
         }
 
         .chat-input button:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .chat-input button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
         /* 移动端适配 */
@@ -272,16 +311,36 @@
 
             .chat-sidebar {
                 position: absolute;
-                left: -200px;
+                left: -240px;
                 top: 0;
                 bottom: 0;
                 background: white;
                 transition: left 0.3s;
+                z-index: 1001;
             }
 
             .chat-sidebar.show {
                 left: 0;
             }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c0c4cc;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #909399;
         }
     </style>
 </head>
@@ -345,6 +404,19 @@
         const { ElMessage } = ElementPlus;
         const { ChatDotRound, Close, Menu, Plus } = ElementPlusIconsVue;
 
+        // 注册 Element Plus 图标组件
+        const icons = {
+            'ChatDotRound': ChatDotRound,
+            'Close': Close,
+            'ArrowRight': ElementPlusIconsVue.ArrowRight,
+            'Loading': ElementPlusIconsVue.Loading,
+            'Delete': ElementPlusIconsVue.Delete,
+            'Edit': ElementPlusIconsVue.Edit,
+            'Check': ElementPlusIconsVue.Check,
+            'Warning': ElementPlusIconsVue.Warning,
+            'Plus': Plus
+        };
+
         const app = createApp({
             setup() {
                 const isOpen = ref(false);
@@ -357,22 +429,40 @@
                 const applicationId = '{{ application_id }}';
                 const currentConversationId = ref(null);
                 const isLoading = ref(false);
+                const sessionId = ref(localStorage.getItem('chat_session_id') || generateSessionId());
+
+                // 生成会话ID
+                function generateSessionId() {
+                    const id = 'session_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('chat_session_id', id);
+                    console.log('生成的会话ID:', id);
+                    return id;
+                }
 
                 // 加载对话列表
                 const loadConversations = async () => {
                     try {
-                        const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            conversations.value = data;
-                            if (data.length > 0 && !currentConversationId.value) {
-                                currentConversationId.value = data[0].conversation_id;
-                                await loadConversation(data[0].conversation_id);
-                            }
+                        console.log('当前会话ID:', sessionId.value);
+                        const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/?session_id=${sessionId.value}`);
+                        console.log('加载对话列表响应:', response);
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.error('加载对话列表失败:', errorData);
+                            ElMessage.error(`加载对话列表失败: ${errorData.detail || errorData.error || '未知错误'}`);
+                            return;
+                        }
+                        
+                        const data = await response.json();
+                        console.log('加载的对话列表:', data);
+                        conversations.value = data;
+                        if (data.length > 0 && !currentConversationId.value) {
+                            currentConversationId.value = data[0].conversation_id;
+                            await loadConversation(data[0].conversation_id);
                         }
                     } catch (error) {
-                        console.error('加载对话列表失败:', error);
-                        ElMessage.error('加载对话列表失败');
+                        console.error('加载对话列表时发生错误:', error);
+                        ElMessage.error(`加载对话列表时发生错误: ${error.message || '未知错误'}`);
                     }
                 };
 
@@ -380,13 +470,18 @@
                 const loadConversation = async (conversationId) => {
                     try {
                         isLoading.value = true;
-                        const response = await fetch(`${apiUrl}/api/chat/conversations/${conversationId}/messages/`);
+                        console.log('加载对话历史，会话ID:', sessionId.value);
+                        const response = await fetch(`${apiUrl}/api/chat/conversations/${conversationId}/messages/?session_id=${sessionId.value}`);
+                        console.log('加载对话历史响应:', response);
                         if (response.ok) {
                             const data = await response.json();
+                            console.log('对话历史数据:', data);
                             messages.value = data;
                             currentConversationId.value = conversationId;
                             await nextTick();
                             scrollToBottom();
+                        } else {
+                            throw new Error('加载对话失败');
                         }
                     } catch (error) {
                         console.error('加载对话历史失败:', error);
@@ -406,13 +501,15 @@
                 };
 
                 // 新建对话
-                const newConversation = () => {
+                const newConversation = async () => {
                     currentConversationId.value = null;
                     messages.value = [];
                     newMessage.value = '';
                     if (window.innerWidth <= 768) {
                         showSidebar.value = false;
                     }
+                    // 刷新对话列表
+                    await loadConversations();
                 };
 
                 // 切换侧边栏
@@ -468,16 +565,14 @@
                             application_id: parseInt(applicationId),
                             conversation_id: currentConversationId.value,
                             temperature: 0.7,
-                            max_tokens: 2000
+                            max_tokens: 2000,
+                            session_id: sessionId.value
                         };
                         
                         console.log('发送的消息数据:', messageData);
                         
                         // 添加用户消息到界面
-                        messages.value.push({
-                            role: 'user',
-                            content: newMessage.value
-                        });
+                        const userMessage = appendMessage('user', newMessage.value);
                         
                         const tempMessage = newMessage.value;
                         newMessage.value = '';
@@ -534,42 +629,20 @@
                                             isThinking = true;
                                             thinkingContent += parsed.reasoning_content;
                                             // 更新或添加思考过程消息
-                                            if (messages.value.length > 0 && 
-                                                messages.value[messages.value.length - 1].role === 'assistant' &&
-                                                messages.value[messages.value.length - 1].isThinking) {
-                                                messages.value[messages.value.length - 1].content = thinkingContent;
-                                            } else {
-                                                messages.value.push({
-                                                    role: 'assistant',
-                                                    content: thinkingContent,
-                                                    isThinking: true
-                                                });
-                                            }
+                                            const thinkingMessage = appendMessage('assistant', thinkingContent);
+                                            thinkingMessage.isThinking = true;
                                         }
                                         // 处理最终回答
                                         else if (parsed.content) {
                                             if (isThinking) {
                                                 // 如果之前有思考过程，添加最终回答
-                                                messages.value.push({
-                                                    role: 'assistant',
-                                                    content: parsed.content,
-                                                    isThinking: false
-                                                });
+                                                const finalAnswer = appendMessage('assistant', parsed.content);
                                                 isThinking = false;
                                             } else {
                                                 assistantMessage += parsed.content;
                                                 // 更新最后一条消息或添加新消息
-                                                if (messages.value.length > 0 && 
-                                                    messages.value[messages.value.length - 1].role === 'assistant' &&
-                                                    !messages.value[messages.value.length - 1].isThinking) {
-                                                    messages.value[messages.value.length - 1].content = assistantMessage;
-                                                } else {
-                                                    messages.value.push({
-                                                        role: 'assistant',
-                                                        content: assistantMessage,
-                                                        isThinking: false
-                                                    });
-                                                }
+                                                const assistantMessageObj = appendMessage('assistant', assistantMessage);
+                                                assistantMessageObj.isThinking = false;
                                             }
                                         }
                                         
@@ -584,24 +657,39 @@
                         
                         // 如果没有收到任何响应，添加错误消息
                         if (!assistantMessage && !thinkingContent) {
-                            messages.value.push({
-                                role: 'assistant',
-                                content: '抱歉，没有收到有效的响应。请稍后重试。',
-                                isThinking: false
-                            });
+                            appendMessage('assistant', '抱歉，没有收到有效的响应。请稍后重试。');
                         }
                         
                     } catch (error) {
                         console.error('发送消息失败:', error);
-                        messages.value.push({
-                            role: 'assistant',
-                            content: `发送消息失败: ${error.message}`,
-                            isThinking: false
-                        });
+                        appendMessage('assistant', `发送消息失败: ${error.message}`);
                     } finally {
                         isLoading.value = false;
                     }
                 };
+
+                function createMessage(role, content) {
+                    return {
+                        role: role,
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    };
+                }
+
+                function appendMessage(role, content) {
+                    const message = createMessage(role, content);
+                    messages.value.push(message);
+                    return message;
+                }
+
+                function updateLastMessage(content) {
+                    if (messages.value.length > 0) {
+                        const lastMessage = messages.value[messages.value.length - 1];
+                        if (lastMessage.role === 'assistant') {
+                            lastMessage.content = content;
+                        }
+                    }
+                }
 
                 onMounted(() => {
                     // 可以在这里添加初始化逻辑
@@ -627,25 +715,18 @@
             }
         });
 
-        // 添加全局过滤器
-        app.config.globalProperties.$filters = {
-            formatTime(timestamp) {
-                if (!timestamp) return '';
-                const date = new Date(timestamp);
-                return date.toLocaleString('zh-CN', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+        // 注册所有图标组件
+        Object.entries(icons).forEach(([name, component]) => {
+            if (component) {
+                app.component(name, component);
+                app.component(name.toLowerCase(), component);
             }
-        };
+        });
+
+        // 注册 el-icon 组件
+        app.component('el-icon', ElementPlus.ElIcon);
 
         app.use(ElementPlus);
-        app.component('ChatDotRound', ChatDotRound);
-        app.component('Close', Close);
-        app.component('Menu', Menu);
-        app.component('Plus', Plus);
         app.mount('#app');
     </script>
 </body>
