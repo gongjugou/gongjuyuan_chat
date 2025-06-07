@@ -95,6 +95,7 @@ class Application(models.Model):
     system_role = models.TextField(
         verbose_name="系统角色",
         blank=True,
+        default="你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。",
         help_text="设置AI助手的角色和行为"
     )
     show_reasoning = models.BooleanField(

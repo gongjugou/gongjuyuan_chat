@@ -158,8 +158,8 @@ class ApplicationViewSet(ModelViewSet):
             logger.info(f"找到应用: {application.name}")
             
             session_id = request.data.get('session_id')
-            title = request.data.get('title', '新对话')
-            logger.info(f"会话ID: {session_id}, 标题: {title}")
+            user_message = request.data.get('message')
+            logger.info(f"会话ID: {session_id}")
             
             if not session_id:
                 logger.warning("未提供会话ID")
@@ -169,18 +169,181 @@ class ApplicationViewSet(ModelViewSet):
                 )
             
             try:
-                # 创建新对话
-                conversation = ChatConversation.objects.create(
-                    application=application,
-                    session_id=session_id,
-                    title=title,
-                    conversation_id=str(uuid.uuid4()),
-                    model=application.model  # 添加模型关联
-                )
-                logger.info(f"创建新对话成功: {conversation.conversation_id}")
+                # 获取或创建对话
+                conv_start = time.time()
+                conversation_id = request.data.get('conversation_id')
+                if conversation_id:
+                    try:
+                        conversation = ChatConversation.objects.select_related('model').get(
+                            conversation_id=conversation_id,
+                            session_id=session_id,
+                            application=application
+                        )
+                        print(f"\n[3/7] 查询现有对话: {time.time() - conv_start:.3f}秒")
+                        print(f"对话ID: {conversation.conversation_id}")
+                        print(f"对话标题: {conversation.title}")
+                    except ChatConversation.DoesNotExist:
+                        return JsonResponse(
+                            {"error": "会话不存在"},
+                            status=404
+                        )
+                else:
+                    # 使用用户消息作为标题
+                    title = user_message[:50] if user_message else '新对话'
+                    conversation = ChatConversation.objects.create(
+                        session_id=session_id,
+                        application=application,
+                        conversation_id=str(uuid.uuid4()),
+                        title=title,  # 使用用户消息作为标题
+                        model=application.model
+                    )
+                    print(f"\n[3/7] 创建新对话: {time.time() - conv_start:.3f}秒")
+                    print(f"对话ID: {conversation.conversation_id}")
+                    print(f"对话标题: {conversation.title}")
                 
-                serializer = ChatConversationSerializer(conversation)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # 保存用户消息
+                msg_start = time.time()
+                user_message_obj = ChatMessage.objects.create(
+                    conversation=conversation,
+                    role='user',
+                    content=user_message,
+                    tokens=len(user_message) // 4,
+                    model_used=application.model
+                )
+                print(f"\n[4/7] 保存用户消息: {time.time() - msg_start:.3f}秒")
+                print(f"消息ID: {user_message_obj.id}")
+                print(f"消息内容: {user_message[:50]}...")
+                
+                def event_stream():
+                    stream_start = time.time()
+                    print(f"\n[5/7] 开始流式处理: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    
+                    try:
+                        # 初始化OpenAI客户端
+                        client_start = time.time()
+                        client = OpenAI(
+                            base_url=application.model.api_url,
+                            api_key=application.model.api_key
+                        )
+                        print(f"初始化OpenAI客户端: {time.time() - client_start:.3f}秒")
+                        
+                        # 准备消息
+                        msg_prep_start = time.time()
+                        messages = []
+                        if application.system_role:
+                            messages.append({
+                                "role": "system",
+                                "content": application.system_role
+                            })
+                        
+                        # 获取历史消息（只获取用户和助手的消息）
+                        history_start = time.time()
+                        history_messages = conversation.messages.filter(
+                            role__in=['user', 'assistant'],
+                            conversation=conversation  # 确保只获取当前对话的消息
+                        ).order_by('-timestamp')[:5]
+                        for msg in reversed(history_messages):
+                            if msg.role in ['user', 'assistant']:  # 确保只添加用户和助手的消息
+                                messages.append({
+                                    "role": msg.role,
+                                    "content": msg.content
+                                })
+                        print(f"准备历史消息: {time.time() - history_start:.3f}秒")
+                        print(f"总消息准备: {time.time() - msg_prep_start:.3f}秒")
+                        print(f"历史消息数量: {len(history_messages)}")
+                        
+                        # 创建助手消息
+                        assistant_start = time.time()
+                        assistant_message = ChatMessage(
+                            conversation=conversation,
+                            role='assistant',
+                            model_used=application.model,
+                            temperature=request.data.get('temperature', 0.7),
+                            max_tokens=request.data.get('max_tokens', 2000)
+                        )
+                        print(f"创建助手消息对象: {time.time() - assistant_start:.3f}秒")
+                        
+                        # 调用OpenAI API
+                        api_start = time.time()
+                        print(f"\n[6/7] 开始调用OpenAI API: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                        response = client.chat.completions.create(
+                            model=application.model.name,
+                            messages=messages,
+                            stream=True,
+                            temperature=0.7,  # 使用默认值
+                            max_tokens=2000   # 使用默认值
+                        )
+                        print(f"API调用耗时: {time.time() - api_start:.3f}秒")
+                        
+                        full_response = ""
+                        first_chunk_time = None
+                        chunk_count = 0
+                        total_chunk_time = 0
+                        
+                        # 处理流式响应
+                        stream_process_start = time.time()
+                        print("\n[7/7] 开始接收流式响应:")
+                        for chunk in response:
+                            chunk_start = time.time()
+                            if not chunk.choices:
+                                continue
+                                
+                            if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
+                                content = chunk.choices[0].delta.reasoning_content
+                                yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
+                            elif hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                                content = chunk.choices[0].delta.content
+                                yield f"data: {json.dumps({'content': content})}\n\n"
+                                full_response += content
+                                
+                                if first_chunk_time is None:
+                                    first_chunk_time = time.time()
+                                    print(f"收到第一个响应块: {first_chunk_time - api_start:.3f}秒")
+                                
+                                chunk_count += 1
+                                chunk_time = time.time() - chunk_start
+                                total_chunk_time += chunk_time
+                                if chunk_count % 10 == 0:  # 每10个块记录一次
+                                    print(f"处理第{chunk_count}个响应块: {chunk_time:.3f}秒")
+                        
+                        print(f"\n流式响应处理完成:")
+                        print(f"总耗时: {time.time() - stream_process_start:.3f}秒")
+                        print(f"平均每块耗时: {total_chunk_time/chunk_count if chunk_count > 0 else 0:.3f}秒")
+                        
+                        # 保存助手消息
+                        save_start = time.time()
+                        assistant_message.content = full_response
+                        assistant_message.tokens = len(full_response) // 4
+                        assistant_message.save()
+                        print(f"保存助手消息: {time.time() - save_start:.3f}秒")
+                        
+                        # 更新对话统计
+                        stats_start = time.time()
+                        conversation.update_stats()
+                        print(f"更新对话统计: {time.time() - stats_start:.3f}秒")
+                        
+                        print(f"\n流式处理完成:")
+                        print(f"总耗时: {time.time() - stream_start:.3f}秒")
+                        print(f"总响应长度: {len(full_response)} 字符")
+                        print(f"总响应块数: {chunk_count}")
+                        
+                        yield "data: [DONE]\n\n"
+                        
+                    except Exception as e:
+                        print(f"\n流式处理出错: {str(e)}")
+                        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                
+                response = StreamingHttpResponse(
+                    event_stream(),
+                    content_type='text/event-stream'
+                )
+                response['Cache-Control'] = 'no-cache'
+                response['X-Accel-Buffering'] = 'no'
+                
+                print(f"\n请求处理完成:")
+                print(f"总耗时: {time.time() - stream_start:.3f}秒")
+                print("="*50 + "\n")
+                return response
                 
             except Exception as e:
                 logger.error(f"创建对话时发生错误: {str(e)}")
@@ -283,11 +446,13 @@ class ChatStreamView(View):
                         status=404
                     )
             else:
+                # 使用用户消息作为标题
+                title = data['message'][:50] if data['message'] else '新对话'
                 conversation = ChatConversation.objects.create(
                     session_id=session_id,
                     application=application,
                     conversation_id=str(uuid.uuid4()),
-                    title=data['message'][:50],
+                    title=title,  # 使用用户消息作为标题
                     model=application.model
                 )
                 print(f"\n[3/7] 创建新对话: {time.time() - conv_start:.3f}秒")
@@ -326,32 +491,27 @@ class ChatStreamView(View):
                     if application.system_role:
                         messages.append({
                             "role": "system",
-                            "content": application.system_role
+                            "content": "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
                         })
                     
                     # 获取历史消息
-                    history_start = time.time()
-                    history_messages = conversation.messages.order_by('-timestamp')[:5]
+                    history_messages = conversation.messages.filter(
+                        role__in=['user', 'assistant']
+                    ).order_by('-timestamp')[:5]
+                    
+                    # 添加历史消息（按时间正序）
                     for msg in reversed(history_messages):
                         messages.append({
                             "role": msg.role,
                             "content": msg.content
                         })
-                    print(f"准备历史消息: {time.time() - history_start:.3f}秒")
-                    print(f"总消息准备: {time.time() - msg_prep_start:.3f}秒")
-                    print(f"历史消息数量: {len(history_messages)}")
                     
-                    # 创建助手消息
-                    assistant_start = time.time()
-                    assistant_message = ChatMessage(
-                        conversation=conversation,
-                        role='assistant',
-                        model_used=application.model,
-                        temperature=data.get('temperature', 0.7),
-                        max_tokens=data.get('max_tokens', 2000)
-                    )
-                    print(f"创建助手消息对象: {time.time() - assistant_start:.3f}秒")
-                    
+                    # 添加当前用户消息
+                    messages.append({
+                        "role": "user",
+                        "content": data.get('message', '')
+                    })
+
                     # 调用OpenAI API
                     api_start = time.time()
                     print(f"\n[6/7] 开始调用OpenAI API: {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -359,69 +519,72 @@ class ChatStreamView(View):
                         model=application.model.name,
                         messages=messages,
                         stream=True,
-                        temperature=data.get('temperature', 0.7),
-                        max_tokens=data.get('max_tokens', 2000)
+                        temperature=0.7,  # 使用默认值
+                        max_tokens=2000   # 使用默认值
                     )
-                    print(f"API调用耗时: {time.time() - api_start:.3f}秒")
-                    
-                    full_response = ""
+
+                    # 记录第一个响应块的时间
                     first_chunk_time = None
-                    chunk_count = 0
-                    total_chunk_time = 0
-                    
-                    # 处理流式响应
-                    stream_process_start = time.time()
-                    print("\n[7/7] 开始接收流式响应:")
+                    total_chunks = 0
+                    total_content_length = 0
+                    full_response = ""
+                    full_reasoning = ""
+
+                    # 逐步接收并处理响应
+                    print("[yellow]开始接收响应...[/]")
                     for chunk in response:
-                        chunk_start = time.time()
                         if not chunk.choices:
                             continue
-                            
-                        if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
-                            content = chunk.choices[0].delta.reasoning_content
-                            yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
-                        elif hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                        
+                        # 记录第一个响应块的时间
+                        if first_chunk_time is None:
+                            first_chunk_time = time.time()
+                            print(f"第一个响应块耗时: {first_chunk_time - api_start:.3f}秒")
+                        
+                        total_chunks += 1
+                        if chunk.choices[0].delta.content:
                             content = chunk.choices[0].delta.content
-                            yield f"data: {json.dumps({'content': content})}\n\n"
+                            total_content_length += len(content)
                             full_response += content
-                            
-                            if first_chunk_time is None:
-                                first_chunk_time = time.time()
-                                print(f"收到第一个响应块: {first_chunk_time - api_start:.3f}秒")
-                            
-                            chunk_count += 1
-                            chunk_time = time.time() - chunk_start
-                            total_chunk_time += chunk_time
-                            if chunk_count % 10 == 0:  # 每10个块记录一次
-                                print(f"处理第{chunk_count}个响应块: {chunk_time:.3f}秒")
-                    
-                    print(f"\n流式响应处理完成:")
-                    print(f"总耗时: {time.time() - stream_process_start:.3f}秒")
-                    print(f"平均每块耗时: {total_chunk_time/chunk_count if chunk_count > 0 else 0:.3f}秒")
-                    
+                            # 直接yield数据
+                            yield f"data: {json.dumps({'content': content})}\n\n"
+                        if chunk.choices[0].delta.reasoning_content:
+                            content = chunk.choices[0].delta.reasoning_content
+                            total_content_length += len(content)
+                            full_reasoning += content
+                            yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
+
                     # 保存助手消息
-                    save_start = time.time()
-                    assistant_message.content = full_response
-                    assistant_message.tokens = len(full_response) // 4
-                    assistant_message.save()
-                    print(f"保存助手消息: {time.time() - save_start:.3f}秒")
-                    
+                    assistant_message = ChatMessage.objects.create(
+                        conversation=conversation,
+                        role='assistant',
+                        content=full_response,
+                        reasoning=full_reasoning,
+                        tokens=len(full_response) // 4,
+                        model_used=application.model
+                    )
+
                     # 更新对话统计
-                    stats_start = time.time()
                     conversation.update_stats()
-                    print(f"更新对话统计: {time.time() - stats_start:.3f}秒")
-                    
-                    print(f"\n流式处理完成:")
-                    print(f"总耗时: {time.time() - stream_start:.3f}秒")
-                    print(f"总响应长度: {len(full_response)} 字符")
-                    print(f"总响应块数: {chunk_count}")
-                    
+
+                    # 记录结束时间和统计信息
+                    end_time = time.time()
+                    print(f"\n[bold green]执行完成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/]")
+                    print(f"[bold cyan]性能统计:[/]")
+                    print(f"[dim]总执行时间: {round(end_time - start_time, 3)} 秒[/]")
+                    print(f"[dim]API请求总耗时: {round(end_time - api_start, 3)} 秒[/]")
+                    print(f"[dim]总响应块数: {total_chunks}[/]")
+                    print(f"[dim]总内容长度: {total_content_length} 字符[/]")
+                    if total_chunks > 0:
+                        print(f"[dim]平均每块耗时: {round((end_time - first_chunk_time) / total_chunks, 3)} 秒[/]")
+                        print(f"[dim]平均每字符耗时: {round((end_time - first_chunk_time) / total_content_length, 3)} 秒[/]")
+
                     yield "data: [DONE]\n\n"
-                    
+
                 except Exception as e:
                     print(f"\n流式处理出错: {str(e)}")
                     yield f"data: {json.dumps({'error': str(e)})}\n\n"
-            
+
             response = StreamingHttpResponse(
                 event_stream(),
                 content_type='text/event-stream'
@@ -429,11 +592,8 @@ class ChatStreamView(View):
             response['Cache-Control'] = 'no-cache'
             response['X-Accel-Buffering'] = 'no'
             
-            print(f"\n请求处理完成:")
-            print(f"总耗时: {time.time() - start_time:.3f}秒")
-            print("="*50 + "\n")
             return response
-            
+
         except json.JSONDecodeError:
             print("\nJSON解析错误")
             return JsonResponse(
@@ -744,29 +904,36 @@ class MessageStreamView(View):
                     if application.system_role:
                         messages.append({
                             "role": "system",
-                            "content": application.system_role
+                            "content": "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
                         })
                     
-                    # 获取历史消息（只获取用户和助手的消息）
+                    # 获取历史消息
                     history_messages = conversation.messages.filter(
                         role__in=['user', 'assistant']
-                    ).order_by('timestamp')
+                    ).order_by('-timestamp')[:5]
                     
-                    for msg in history_messages:
+                    # 添加历史消息（按时间正序）
+                    for msg in reversed(history_messages):
                         messages.append({
                             "role": msg.role,
                             "content": msg.content
                         })
+                    
+                    # 添加当前用户消息
+                    messages.append({
+                        "role": "user",
+                        "content": data.get('message', '')
+                    })
 
-                    # 记录API请求开始时间
-                    request_start = time.time()
-                    print("[yellow]正在发送API请求...[/]")
-
-                    # 发送带有流式输出的请求
+                    # 调用OpenAI API
+                    api_start = time.time()
+                    print(f"\n[6/7] 开始调用OpenAI API: {time.strftime('%Y-%m-%d %H:%M:%S')}")
                     response = client.chat.completions.create(
                         model=application.model.name,
                         messages=messages,
-                        stream=True
+                        stream=True,
+                        temperature=0.7,  # 使用默认值
+                        max_tokens=2000   # 使用默认值
                     )
 
                     # 记录第一个响应块的时间
@@ -785,7 +952,7 @@ class MessageStreamView(View):
                         # 记录第一个响应块的时间
                         if first_chunk_time is None:
                             first_chunk_time = time.time()
-                            print(f"第一个响应块耗时: {first_chunk_time - request_start:.3f}秒")
+                            print(f"第一个响应块耗时: {first_chunk_time - api_start:.3f}秒")
                         
                         total_chunks += 1
                         if chunk.choices[0].delta.content:
@@ -793,14 +960,12 @@ class MessageStreamView(View):
                             total_content_length += len(content)
                             full_response += content
                             # 直接yield数据
-                            data = f"data: {json.dumps({'content': content})}\n\n"
-                            yield data
+                            yield f"data: {json.dumps({'content': content})}\n\n"
                         if chunk.choices[0].delta.reasoning_content:
                             content = chunk.choices[0].delta.reasoning_content
                             total_content_length += len(content)
                             full_reasoning += content
-                            data = f"data: {json.dumps({'reasoning_content': content})}\n\n"
-                            yield data
+                            yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
 
                     # 保存助手消息
                     assistant_message = ChatMessage.objects.create(
@@ -820,7 +985,7 @@ class MessageStreamView(View):
                     print(f"\n[bold green]执行完成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/]")
                     print(f"[bold cyan]性能统计:[/]")
                     print(f"[dim]总执行时间: {round(end_time - start_time, 3)} 秒[/]")
-                    print(f"[dim]API请求总耗时: {round(end_time - request_start, 3)} 秒[/]")
+                    print(f"[dim]API请求总耗时: {round(end_time - api_start, 3)} 秒[/]")
                     print(f"[dim]总响应块数: {total_chunks}[/]")
                     print(f"[dim]总内容长度: {total_content_length} 字符[/]")
                     if total_chunks > 0:

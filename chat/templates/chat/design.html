@@ -245,6 +245,7 @@
             resize: none;
             min-height: 44px;
             max-height: 120px;
+            height: 44px;
             background: var(--bg-color);
             color: var(--text-color);
         }
@@ -644,6 +645,7 @@
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
                 const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const userMessage = document.querySelector('.chat-input').value.trim();
                 
                 console.log('创建新对话，会话ID:', sessionId);
                 const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
@@ -653,7 +655,7 @@
                     },
                     body: JSON.stringify({
                         session_id: sessionId,
-                        title: '新对话'
+                        message: userMessage  // 传递用户消息
                     })
                 });
                 
@@ -673,6 +675,33 @@
             } catch (error) {
                 console.error('创建对话失败:', error);
                 showError('创建对话失败');
+            }
+        }
+
+        // 更新对话标题
+        async function updateConversationTitle(title) {
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${currentConversationId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // 重新加载对话列表以更新标题
+                await loadConversations();
+            } catch (error) {
+                console.error('更新对话标题失败:', error);
             }
         }
 
@@ -720,6 +749,8 @@
             // 添加用户消息到界面
             appendMessage('user', message);
             chatInput.value = '';
+            // 重置输入框高度
+            chatInput.style.height = '44px';
 
             // 如果没有当前对话，创建新对话
             if (!currentConversationId) {
@@ -934,8 +965,11 @@
 
             // 输入框自动调整高度
             chatInput.oninput = function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                this.style.height = '44px';  // 先重置为默认高度
+                const scrollHeight = this.scrollHeight;
+                if (scrollHeight > 44) {  // 只有当内容真正超过一行时才调整高度
+                    this.style.height = scrollHeight + 'px';
+                }
             };
         });
     </script>
