@@ -240,17 +240,32 @@ class ApplicationViewSet(ModelViewSet):
                         history_start = time.time()
                         history_messages = conversation.messages.filter(
                             role__in=['user', 'assistant'],
-                            conversation=conversation  # 确保只获取当前对话的消息
-                        ).order_by('-timestamp')[:5]
-                        for msg in reversed(history_messages):
-                            if msg.role in ['user', 'assistant']:  # 确保只添加用户和助手的消息
-                                messages.append({
-                                    "role": msg.role,
-                                    "content": msg.content
-                                })
+                            conversation=conversation,  # 确保只获取当前对话的消息
+                            id__lt=user_message_obj.id  # 只获取当前消息之前的消息
+                        ).order_by('timestamp')  # 按时间正序排列
+                        
+                        # 添加历史消息
+                        for msg in history_messages:
+                            messages.append({
+                                "role": msg.role,
+                                "content": msg.content
+                            })
+                        
+                        # 添加当前用户消息（确保不重复添加）
+                        if not messages or messages[-1]['role'] != 'user' or messages[-1]['content'] != user_message:
+                            messages.append({
+                                "role": "user",
+                                "content": user_message
+                            })
+                        
                         print(f"准备历史消息: {time.time() - history_start:.3f}秒")
                         print(f"总消息准备: {time.time() - msg_prep_start:.3f}秒")
                         print(f"历史消息数量: {len(history_messages)}")
+                        
+                        # 打印完整的消息列表，用于调试
+                        print("\n发送给AI的消息列表:")
+                        for msg in messages:
+                            print(f"{msg['role']}: {msg['content'][:100]}...")
                         
                         # 创建助手消息
                         assistant_start = time.time()
@@ -489,29 +504,57 @@ class ChatStreamView(View):
                     msg_prep_start = time.time()
                     messages = []
                     if application.system_role:
+                        # 确保系统角色不包含应用名称
+                        system_role = application.system_role.replace(application.name, "").strip()
+                        if not system_role:
+                            system_role = "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
                         messages.append({
                             "role": "system",
-                            "content": "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
+                            "content": system_role
                         })
                     
-                    # 获取历史消息
+                    # 获取历史消息（只获取用户和助手的消息）
+                    history_start = time.time()
                     history_messages = conversation.messages.filter(
-                        role__in=['user', 'assistant']
-                    ).order_by('-timestamp')[:5]
+                        role__in=['user', 'assistant'],
+                        conversation=conversation,  # 确保只获取当前对话的消息
+                        id__lt=user_message.id  # 只获取当前消息之前的消息
+                    ).order_by('timestamp')  # 按时间正序排列
                     
-                    # 添加历史消息（按时间正序）
-                    for msg in reversed(history_messages):
+                    # 添加历史消息
+                    for msg in history_messages:
                         messages.append({
                             "role": msg.role,
                             "content": msg.content
                         })
                     
-                    # 添加当前用户消息
-                    messages.append({
-                        "role": "user",
-                        "content": data.get('message', '')
-                    })
-
+                    # 添加当前用户消息（确保不重复添加）
+                    if not messages or messages[-1]['role'] != 'user' or messages[-1]['content'] != data['message']:
+                        messages.append({
+                            "role": "user",
+                            "content": data['message']
+                        })
+                    
+                    print(f"准备历史消息: {time.time() - history_start:.3f}秒")
+                    print(f"总消息准备: {time.time() - msg_prep_start:.3f}秒")
+                    print(f"历史消息数量: {len(history_messages)}")
+                    
+                    # 打印完整的消息列表，用于调试
+                    print("\n发送给AI的消息列表:")
+                    for msg in messages:
+                        print(f"{msg['role']}: {msg['content'][:100]}...")
+                    
+                    # 创建助手消息
+                    assistant_start = time.time()
+                    assistant_message = ChatMessage(
+                        conversation=conversation,
+                        role='assistant',
+                        model_used=application.model,
+                        temperature=request.data.get('temperature', 0.7),
+                        max_tokens=request.data.get('max_tokens', 2000)
+                    )
+                    print(f"创建助手消息对象: {time.time() - assistant_start:.3f}秒")
+                    
                     # 调用OpenAI API
                     api_start = time.time()
                     print(f"\n[6/7] 开始调用OpenAI API: {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -522,78 +565,78 @@ class ChatStreamView(View):
                         temperature=0.7,  # 使用默认值
                         max_tokens=2000   # 使用默认值
                     )
-
-                    # 记录第一个响应块的时间
-                    first_chunk_time = None
-                    total_chunks = 0
-                    total_content_length = 0
+                    print(f"API调用耗时: {time.time() - api_start:.3f}秒")
+                    
                     full_response = ""
-                    full_reasoning = ""
-
-                    # 逐步接收并处理响应
-                    print("[yellow]开始接收响应...[/]")
+                    first_chunk_time = None
+                    chunk_count = 0
+                    total_chunk_time = 0
+                    
+                    # 处理流式响应
+                    stream_process_start = time.time()
+                    print("\n[7/7] 开始接收流式响应:")
                     for chunk in response:
+                        chunk_start = time.time()
                         if not chunk.choices:
                             continue
-                        
-                        # 记录第一个响应块的时间
-                        if first_chunk_time is None:
-                            first_chunk_time = time.time()
-                            print(f"第一个响应块耗时: {first_chunk_time - api_start:.3f}秒")
-                        
-                        total_chunks += 1
-                        if chunk.choices[0].delta.content:
-                            content = chunk.choices[0].delta.content
-                            total_content_length += len(content)
-                            full_response += content
-                            # 直接yield数据
-                            yield f"data: {json.dumps({'content': content})}\n\n"
-                        if chunk.choices[0].delta.reasoning_content:
+                            
+                        if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
                             content = chunk.choices[0].delta.reasoning_content
-                            total_content_length += len(content)
-                            full_reasoning += content
                             yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
-
+                        elif hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                            content = chunk.choices[0].delta.content
+                            yield f"data: {json.dumps({'content': content})}\n\n"
+                            full_response += content
+                            
+                            if first_chunk_time is None:
+                                first_chunk_time = time.time()
+                                print(f"收到第一个响应块: {first_chunk_time - api_start:.3f}秒")
+                            
+                            chunk_count += 1
+                            chunk_time = time.time() - chunk_start
+                            total_chunk_time += chunk_time
+                            if chunk_count % 10 == 0:  # 每10个块记录一次
+                                print(f"处理第{chunk_count}个响应块: {chunk_time:.3f}秒")
+                    
+                    print(f"\n流式响应处理完成:")
+                    print(f"总耗时: {time.time() - stream_process_start:.3f}秒")
+                    print(f"平均每块耗时: {total_chunk_time/chunk_count if chunk_count > 0 else 0:.3f}秒")
+                    
                     # 保存助手消息
-                    assistant_message = ChatMessage.objects.create(
-                        conversation=conversation,
-                        role='assistant',
-                        content=full_response,
-                        reasoning=full_reasoning,
-                        tokens=len(full_response) // 4,
-                        model_used=application.model
-                    )
-
+                    save_start = time.time()
+                    assistant_message.content = full_response
+                    assistant_message.tokens = len(full_response) // 4
+                    assistant_message.save()
+                    print(f"保存助手消息: {time.time() - save_start:.3f}秒")
+                    
                     # 更新对话统计
+                    stats_start = time.time()
                     conversation.update_stats()
-
-                    # 记录结束时间和统计信息
-                    end_time = time.time()
-                    print(f"\n[bold green]执行完成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[/]")
-                    print(f"[bold cyan]性能统计:[/]")
-                    print(f"[dim]总执行时间: {round(end_time - start_time, 3)} 秒[/]")
-                    print(f"[dim]API请求总耗时: {round(end_time - api_start, 3)} 秒[/]")
-                    print(f"[dim]总响应块数: {total_chunks}[/]")
-                    print(f"[dim]总内容长度: {total_content_length} 字符[/]")
-                    if total_chunks > 0:
-                        print(f"[dim]平均每块耗时: {round((end_time - first_chunk_time) / total_chunks, 3)} 秒[/]")
-                        print(f"[dim]平均每字符耗时: {round((end_time - first_chunk_time) / total_content_length, 3)} 秒[/]")
-
+                    print(f"更新对话统计: {time.time() - stats_start:.3f}秒")
+                    
+                    print(f"\n流式处理完成:")
+                    print(f"总耗时: {time.time() - stream_start:.3f}秒")
+                    print(f"总响应长度: {len(full_response)} 字符")
+                    print(f"总响应块数: {chunk_count}")
+                    
                     yield "data: [DONE]\n\n"
-
+                    
                 except Exception as e:
                     print(f"\n流式处理出错: {str(e)}")
                     yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
-            response = StreamingHttpResponse(
-                event_stream(),
-                content_type='text/event-stream'
-            )
-            response['Cache-Control'] = 'no-cache'
-            response['X-Accel-Buffering'] = 'no'
-            
-            return response
-
+                
+                response = StreamingHttpResponse(
+                    event_stream(),
+                    content_type='text/event-stream'
+                )
+                response['Cache-Control'] = 'no-cache'
+                response['X-Accel-Buffering'] = 'no'
+                
+                print(f"\n请求处理完成:")
+                print(f"总耗时: {time.time() - stream_start:.3f}秒")
+                print("="*50 + "\n")
+                return response
+                
         except json.JSONDecodeError:
             print("\nJSON解析错误")
             return JsonResponse(
@@ -728,6 +771,8 @@ class ConversationListView(APIView):
         """创建新对话"""
         try:
             session_id = request.data.get('session_id')
+            user_message = request.data.get('message')
+            
             if not session_id:
                 return Response(
                     {"error": "缺少session_id参数"},
@@ -735,13 +780,19 @@ class ConversationListView(APIView):
                 )
 
             application = get_object_or_404(Application, id=application_id, is_active=True)
+            
+            # 使用用户消息作为标题
+            title = user_message[:50] if user_message else '新对话'
+            
             conversation = ChatConversation.objects.create(
                 application=application,
                 session_id=session_id,
                 conversation_id=str(uuid.uuid4()),
-                title=request.data.get('title', '新对话'),
+                title=title,  # 使用用户消息作为标题
                 model=application.model
             )
+            
+            # 不再创建第一条消息，所有消息都通过流式接口插入
             
             serializer = ChatConversationSerializer(conversation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -902,28 +953,42 @@ class MessageStreamView(View):
                     messages = []
                     # 添加系统角色消息
                     if application.system_role:
+                        print(f"使用系统角色: {application.system_role}")
+                        # 确保系统角色不包含应用名称
+                        system_role = application.system_role.replace(application.name, "").strip()
+                        if not system_role:
+                            system_role = "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
                         messages.append({
                             "role": "system",
-                            "content": "你是一个智能助手，可以帮助用户解答问题。请保持友好和专业的态度。"
+                            "content": system_role
                         })
                     
-                    # 获取历史消息
+                    # 获取历史消息（只获取用户和助手的消息）
+                    history_start = time.time()
                     history_messages = conversation.messages.filter(
-                        role__in=['user', 'assistant']
-                    ).order_by('-timestamp')[:5]
+                        role__in=['user', 'assistant'],
+                        conversation=conversation,  # 确保只获取当前对话的消息
+                        id__lt=user_message_obj.id  # 只获取当前消息之前的消息
+                    ).order_by('timestamp')  # 按时间正序排列
                     
-                    # 添加历史消息（按时间正序）
-                    for msg in reversed(history_messages):
+                    # 添加历史消息
+                    for msg in history_messages:
                         messages.append({
                             "role": msg.role,
                             "content": msg.content
                         })
                     
-                    # 添加当前用户消息
-                    messages.append({
-                        "role": "user",
-                        "content": data.get('message', '')
-                    })
+                    # 添加当前用户消息（确保不重复添加）
+                    if not messages or messages[-1]['role'] != 'user' or messages[-1]['content'] != user_message:
+                        messages.append({
+                            "role": "user",
+                            "content": user_message
+                        })
+
+                    # 打印完整的消息列表，用于调试
+                    print("\n发送给AI的消息列表:")
+                    for msg in messages:
+                        print(f"{msg['role']}: {msg['content'][:100]}...")
 
                     # 调用OpenAI API
                     api_start = time.time()

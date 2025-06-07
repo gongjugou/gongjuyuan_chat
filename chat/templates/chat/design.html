@@ -746,23 +746,44 @@
 
             isLoading = true;
             
-            // 添加用户消息到界面
-            appendMessage('user', message);
-            chatInput.value = '';
-            // 重置输入框高度
-            chatInput.style.height = '44px';
-
-            // 如果没有当前对话，创建新对话
-            if (!currentConversationId) {
-                await createNewConversation();
-            }
-
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
                 const applicationId = getUrlParam('application_id') || '{{ application_id }}';
                 
-                // 使用stream端点
-                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${currentConversationId}/messages/stream/`, {
+                // 添加用户消息到界面
+                appendMessage('user', message);
+                chatInput.value = '';
+                // 重置输入框高度
+                chatInput.style.height = '44px';
+                
+                let conversationId = currentConversationId;
+                let isFirstMessage = false;
+                // 如果没有当前对话，先创建新对话
+                if (!conversationId) {
+                    const createResponse = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId,
+                            message: message
+                        })
+                    });
+                    
+                    if (!createResponse.ok) {
+                        throw new Error('创建对话失败');
+                    }
+                    
+                    const newConversation = await createResponse.json();
+                    conversationId = newConversation.conversation_id;
+                    currentConversationId = conversationId;
+                    isFirstMessage = true;
+                    // 不要立即 loadConversations() 或清空 chat-content
+                }
+                
+                // 使用stream端点发送消息
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${conversationId}/messages/stream/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -788,11 +809,14 @@
                 const thinkingProcess = messageItem.querySelector('.thinking-process');
                 let currentReasoning = '';
                 let currentContent = '';
-                
                 while (true) {
                     const {value, done} = await reader.read();
                     if (done) {
                         console.log('流式响应结束');
+                        // 新建对话后发送第一条消息，流式结束后刷新历史
+                        if (isFirstMessage) {
+                            await loadConversation(conversationId);
+                        }
                         break;
                     }
                     
@@ -812,6 +836,10 @@
                         // 处理[DONE]消息
                         if (data === '[DONE]') {
                             console.log('收到完成标记');
+                            // 新建对话后发送第一条消息，流式结束后刷新历史
+                            if (isFirstMessage) {
+                                await loadConversation(conversationId);
+                            }
                             return;
                         }
                         
@@ -923,16 +951,35 @@
             };
 
             // 发送消息事件
-            sendBtn.onclick = sendMessage;
+            sendBtn.onclick = function(e) {
+                e.preventDefault();
+                if (!isLoading) {
+                    sendMessage();
+                }
+            };
+            
             chatInput.onkeypress = function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    sendMessage();
+                    if (!isLoading) {
+                        sendMessage();
+                    }
                 }
             };
 
             // 新建对话事件
-            newChatBtn.onclick = createNewConversation;
+            newChatBtn.onclick = function() {
+                // 清空聊天内容
+                document.querySelector('.chat-content').innerHTML = '';
+                // 清空当前对话ID
+                currentConversationId = null;
+                // 清空输入框
+                document.querySelector('.chat-input').value = '';
+                // 重置输入框高度
+                document.querySelector('.chat-input').style.height = '44px';
+                // 聚焦到输入框
+                document.querySelector('.chat-input').focus();
+            };
 
             // 历史记录按钮事件
             historyBtn.onclick = function(e) {
