@@ -1,15 +1,25 @@
 from rest_framework import serializers
-from .models import ChatConversation, ChatMessage, Application, AIModel
+from .models import Application, ChatConversation, ChatMessage, AIModel
 import logging
 import traceback
 
 logger = logging.getLogger(__name__)
 
+class AIModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIModel
+        fields = ['id', 'name', 'model_type', 'max_tokens_limit', 'description']
+
 class ApplicationSerializer(serializers.ModelSerializer):
+    model = AIModelSerializer(read_only=True)
+    
     class Meta:
         model = Application
-        fields = ['id', 'name', 'description', 'system_role', 'show_reasoning', 'is_public']
-        read_only_fields = ['id']
+        fields = [
+            'id', 'name', 'description', 'model', 
+            'system_role', 'show_reasoning', 'is_public'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,17 +29,31 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ['role', 'content', 'timestamp']
-        read_only_fields = ['timestamp']
+        fields = [
+            'id', 'role', 'content', 'timestamp', 
+            'tokens', 'cost', 'model_used', 'temperature',
+            'top_p', 'max_tokens'
+        ]
+        read_only_fields = [
+            'id', 'timestamp', 'tokens', 'cost', 
+            'model_used', 'temperature', 'top_p', 'max_tokens'
+        ]
 
 class ChatConversationSerializer(serializers.ModelSerializer):
     messages = ChatMessageSerializer(many=True, read_only=True)
+    model = AIModelSerializer(read_only=True)
     
     class Meta:
         model = ChatConversation
-        fields = ['conversation_id', 'title', 'created_at', 'messages', 
-                 'total_tokens', 'application', 'session_id']
-        read_only_fields = ['conversation_id', 'created_at', 'total_tokens']
+        fields = [
+            'id', 'conversation_id', 'title', 'session_id',
+            'model', 'created_at', 'updated_at', 'messages',
+            'total_tokens', 'total_cost', 'temperature', 'top_p'
+        ]
+        read_only_fields = [
+            'id', 'conversation_id', 'created_at', 'updated_at',
+            'total_tokens', 'total_cost'
+        ]
     
     def to_representation(self, instance):
         """自定义序列化输出"""

@@ -1,13 +1,35 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ApplicationViewSet, ChatStreamView, chat_widget, ChatMessageView
+from django.urls import path
+from . import views
 
-router = DefaultRouter()
-router.register(r'applications', ApplicationViewSet)
+app_name = 'chat'
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('stream/', ChatStreamView.as_view(), name='chat-stream'),
-    path('ui/<str:application_id>/', chat_widget, name='chat-interface'),
-    path('conversations/<str:conversation_id>/messages/', ChatMessageView.as_view(), name='chat-messages'),
+    # UI 路由
+    path('ui/<int:application_id>/', 
+         views.ChatWidgetView.as_view(), 
+         name='chat_widget'),
+    
+    # 应用相关
+    path('applications/<int:application_id>/', 
+         views.ApplicationDetailView.as_view(), 
+         name='application_detail'),
+    path('applications/', 
+         views.ApplicationListView.as_view(), 
+         name='application_list'),
+    
+    # 对话相关
+    path('applications/<int:application_id>/conversations/', 
+         views.ConversationListView.as_view(), 
+         name='conversation_list'),
+    path('applications/<int:application_id>/conversations/<str:conversation_id>/', 
+         views.ConversationDetailView.as_view(), 
+         name='conversation_detail'),
+    
+    # 消息相关
+    path('applications/<int:application_id>/conversations/<str:conversation_id>/messages/', 
+         views.MessageListView.as_view(), 
+         name='message_list'),
+    path('applications/<int:application_id>/conversations/<str:conversation_id>/messages/stream/', 
+         views.MessageStreamView.as_view(), 
+         name='message_stream'),
 ]

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -10,6 +11,9 @@
     <script src="https://g.alicdn.com/code/lib/element-plus/2.4.4/index.full.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/element-plus-icons-vue/2.1.0/index.iife.min.js"></script>
     <script src="https://g.alicdn.com/code/lib/axios/1.6.2/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     <style>
         :root {
             --primary-color: #409EFF;
@@ -69,6 +73,15 @@
             flex-direction: column;
             overflow: hidden;
             transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        .chat-window.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
         }
 
         .chat-header {
@@ -100,12 +113,15 @@
         }
 
         .chat-sidebar {
-            width: 240px;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
+            width: 0;
             background-color: var(--background-color);
-            transition: all 0.3s;
+            transition: width 0.3s;
+            overflow: hidden;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .chat-sidebar.show {
+            width: 240px;
         }
 
         .chat-sidebar-header {
@@ -118,9 +134,9 @@
         }
 
         .chat-sidebar-content {
-            flex: 1;
-            overflow-y: auto;
             padding: 12px;
+            overflow-y: auto;
+            height: calc(100% - 53px);
         }
 
         .conversation-item {
@@ -350,19 +366,19 @@
             <div class="chat-button" @click="toggleChat">
                 <el-icon :size="24"><ChatDotRound /></el-icon>
             </div>
-            <div class="chat-window" v-if="isOpen">
+            <div class="chat-window" :class="{ 'open': isOpen }">
                 <div class="chat-header">
                     <div class="chat-header-left">
                         <el-icon :size="20" @click="toggleSidebar" style="cursor: pointer;"><Menu /></el-icon>
                         <span>智能客服</span>
                     </div>
                     <div class="chat-header-right">
-                        <el-icon :size="20" @click="newConversation" style="cursor: pointer;"><Plus /></el-icon>
+                        <el-icon :size="20" @click="createNewConversation" style="cursor: pointer;"><Plus /></el-icon>
                         <el-icon :size="20" @click="toggleChat" style="cursor: pointer;"><Close /></el-icon>
                     </div>
                 </div>
                 <div class="chat-content">
-                    <div class="chat-sidebar" :class="{ show: showSidebar }">
+                    <div class="chat-sidebar" :class="{ 'show': showSidebar }">
                         <div class="chat-sidebar-header">
                             <span>历史记录</span>
                             <el-icon :size="16" @click="toggleSidebar" style="cursor: pointer;"><Close /></el-icon>
@@ -372,17 +388,16 @@
                                  :key="conv.conversation_id"
                                  :class="['conversation-item', { active: conv.conversation_id === currentConversationId }]"
                                  @click="switchConversation(conv.conversation_id)">
-                                <div class="conversation-title">{{ conv.title }}</div>
-                                <div class="conversation-time" v-text="formatTime(conv.created_at)"></div>
+                                <div class="conversation-title">${conv.title || '新对话'}</div>
+                                <div class="conversation-time">${formatTime(conv.created_at)}</div>
                             </div>
                         </div>
                     </div>
                     <div class="chat-main">
-                        <div class="chat-messages" ref="messagesContainer">
-                            <div v-for="(message, index) in messages" 
-                                 :key="index" 
-                                 :class="['message', message.role]">
-                                <div class="message-content" v-html="formatMessage(message.content, message.isThinking)"></div>
+                        <div class="chat-messages" ref="chatMessages">
+                            <div v-for="(message, index) in messages" :key="index" class="message" :class="message.role + '-message'">
+                                <div class="message-content" v-html="formatMessage(message.content)"></div>
+                                <div v-if="message.reasoning" class="thinking-process" v-html="formatMessage(message.reasoning)"></div>
                             </div>
                         </div>
                         <div class="chat-input">
@@ -391,7 +406,8 @@
                                    @keyup.enter="sendMessage"
                                    placeholder="请输入消息..."
                                    :disabled="isLoading">
-                            <button @click="sendMessage" :disabled="isLoading || !newMessage.trim()" v-text="isLoading ? '发送中...' : '发送'"></button>
+                            <button @click="sendMessage" 
+                                    :disabled="isLoading || !newMessage.trim()">${isLoading ? '发送中...' : '发送'}</button>
                         </div>
                     </div>
                 </div>
@@ -400,22 +416,9 @@
     </div>
 
     <script>
-        const { createApp, ref, nextTick, onMounted } = Vue;
+        const { createApp, ref, onMounted, nextTick } = Vue;
         const { ElMessage } = ElementPlus;
         const { ChatDotRound, Close, Menu, Plus } = ElementPlusIconsVue;
-
-        // 注册 Element Plus 图标组件
-        const icons = {
-            'ChatDotRound': ChatDotRound,
-            'Close': Close,
-            'ArrowRight': ElementPlusIconsVue.ArrowRight,
-            'Loading': ElementPlusIconsVue.Loading,
-            'Delete': ElementPlusIconsVue.Delete,
-            'Edit': ElementPlusIconsVue.Edit,
-            'Check': ElementPlusIconsVue.Check,
-            'Warning': ElementPlusIconsVue.Warning,
-            'Plus': Plus
-        };
 
         const app = createApp({
             setup() {
@@ -424,92 +427,145 @@
                 const messages = ref([]);
                 const conversations = ref([]);
                 const newMessage = ref('');
-                const messagesContainer = ref(null);
+                const chatMessages = ref(null);
                 const apiUrl = '{{ api_url }}';
                 const applicationId = '{{ application_id }}';
                 const currentConversationId = ref(null);
                 const isLoading = ref(false);
-                const sessionId = ref(localStorage.getItem('chat_session_id') || generateSessionId());
+                const sessionId = ref(null);
+                const currentConversationTitle = ref('');
 
                 // 生成会话ID
                 function generateSessionId() {
                     const id = 'session_' + Math.random().toString(36).substr(2, 9);
                     localStorage.setItem('chat_session_id', id);
-                    console.log('生成的会话ID:', id);
+                    console.log('生成新的会话ID:', id);
                     return id;
                 }
 
+                // 初始化会话
+                function initializeSession() {
+                    const storedSessionId = localStorage.getItem('chat_session_id');
+                    if (storedSessionId) {
+                        console.log('使用已存在的会话ID:', storedSessionId);
+                        sessionId.value = storedSessionId;
+                    } else {
+                        sessionId.value = generateSessionId();
+                    }
+                }
+
                 // 加载对话列表
-                const loadConversations = async () => {
+                async function loadConversations() {
+                    if (!sessionId.value) {
+                        console.error('会话ID未初始化');
+                        return;
+                    }
+
                     try {
-                        console.log('当前会话ID:', sessionId.value);
-                        const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/?session_id=${sessionId.value}`);
-                        console.log('加载对话列表响应:', response);
+                        console.log('加载对话列表，会话ID:', sessionId.value);
+                        const response = await fetch(
+                            `${apiUrl}/api/chat/applications/${applicationId}/conversations/?session_id=${sessionId.value}`
+                        );
                         
                         if (!response.ok) {
-                            const errorData = await response.json();
-                            console.error('加载对话列表失败:', errorData);
-                            ElMessage.error(`加载对话列表失败: ${errorData.detail || errorData.error || '未知错误'}`);
-                            return;
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
                         
                         const data = await response.json();
-                        console.log('加载的对话列表:', data);
+                        console.log('获取到对话列表:', data);
                         conversations.value = data;
-                        if (data.length > 0 && !currentConversationId.value) {
-                            currentConversationId.value = data[0].conversation_id;
+                        
+                        // 如果有对话，加载第一个对话的历史
+                        if (data.length > 0) {
                             await loadConversation(data[0].conversation_id);
                         }
                     } catch (error) {
-                        console.error('加载对话列表时发生错误:', error);
-                        ElMessage.error(`加载对话列表时发生错误: ${error.message || '未知错误'}`);
+                        console.error('加载对话列表失败:', error);
+                        ElMessage.error('加载对话列表失败');
                     }
-                };
+                }
 
-                // 加载单个对话
-                const loadConversation = async (conversationId) => {
+                // 加载对话历史
+                async function loadConversation(conversationId) {
+                    if (!sessionId.value) {
+                        console.error('会话ID未初始化');
+                        return;
+                    }
+
                     try {
-                        isLoading.value = true;
                         console.log('加载对话历史，会话ID:', sessionId.value);
-                        const response = await fetch(`${apiUrl}/api/chat/conversations/${conversationId}/messages/?session_id=${sessionId.value}`);
-                        console.log('加载对话历史响应:', response);
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log('对话历史数据:', data);
-                            messages.value = data;
-                            currentConversationId.value = conversationId;
-                            await nextTick();
-                            scrollToBottom();
-                        } else {
-                            throw new Error('加载对话失败');
+                        const response = await fetch(
+                            `${apiUrl}/api/chat/applications/${applicationId}/conversations/${conversationId}/messages/?session_id=${sessionId.value}`
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
+                        
+                        const data = await response.json();
+                        console.log('获取到消息历史:', data);
+                        messages.value = data;
+                        currentConversationId.value = conversationId;
+                        const conversation = conversations.value.find(c => c.conversation_id === conversationId);
+                        currentConversationTitle.value = conversation.title;
+                        
+                        await nextTick();
+                        scrollToBottom();
                     } catch (error) {
                         console.error('加载对话历史失败:', error);
-                        ElMessage.error('加载对话历史失败');
-                    } finally {
-                        isLoading.value = false;
+                        ElMessage.error('加载对话失败');
                     }
-                };
+                }
 
                 // 切换对话
-                const switchConversation = async (conversationId) => {
-                    if (conversationId === currentConversationId.value) return;
-                    await loadConversation(conversationId);
-                    if (window.innerWidth <= 768) {
-                        showSidebar.value = false;
+                async function switchConversation(conversationId) {
+                    if (!sessionId.value) {
+                        console.error('会话ID未初始化');
+                        return;
                     }
-                };
 
-                // 新建对话
-                const newConversation = async () => {
-                    currentConversationId.value = null;
-                    messages.value = [];
-                    newMessage.value = '';
-                    if (window.innerWidth <= 768) {
-                        showSidebar.value = false;
+                    try {
+                        console.log('切换对话，会话ID:', sessionId.value, '对话ID:', conversationId);
+                        await loadConversation(conversationId);
+                    } catch (error) {
+                        console.error('切换对话失败:', error);
+                        ElMessage.error('切换对话失败');
                     }
-                    // 刷新对话列表
-                    await loadConversations();
+                }
+
+                // 创建新对话
+                const createNewConversation = async () => {
+                    try {
+                        console.log('创建新对话，会话ID:', sessionId.value);
+                        const response = await fetch(
+                            `${apiUrl}/api/chat/applications/${applicationId}/conversations/`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    session_id: sessionId.value,
+                                    title: '新对话'
+                                })
+                            }
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const newConversation = await response.json();
+                        console.log('创建新对话成功:', newConversation);
+                        conversations.value.unshift(newConversation);
+                        currentConversationId.value = newConversation.conversation_id;
+                        currentConversationTitle.value = newConversation.title;
+                        messages.value = [];
+                        showSidebar.value = false;
+                    } catch (error) {
+                        console.error('创建对话失败:', error);
+                        ElMessage.error('创建对话失败');
+                    }
                 };
 
                 // 切换侧边栏
@@ -518,17 +574,18 @@
                 };
 
                 // 切换聊天窗口
-                const toggleChat = () => {
+                function toggleChat() {
                     isOpen.value = !isOpen.value;
                     if (isOpen.value) {
+                        initializeSession(); // 确保在打开聊天窗口时初始化会话
                         loadConversations();
                     }
-                };
+                }
 
                 // 滚动到底部
                 const scrollToBottom = () => {
-                    if (messagesContainer.value) {
-                        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+                    if (chatMessages.value) {
+                        chatMessages.value.scrollTop = chatMessages.value.scrollHeight;
                     }
                 };
 
@@ -545,154 +602,167 @@
                 };
 
                 // 格式化消息
-                const formatMessage = (content, isThinking = false) => {
+                const formatMessage = (content) => {
                     if (!content) return '';
                     const formattedContent = content.replace(/\n/g, '<br>');
-                    if (isThinking) {
-                        return `<div class="thinking-process">${formattedContent}</div>`;
-                    }
                     return formattedContent;
                 };
 
                 // 发送消息
-                const sendMessage = async () => {
+                async function sendMessage() {
                     if (!newMessage.value.trim() || isLoading.value) return;
                     
+                    const message = newMessage.value.trim();
+                    isLoading.value = true;
+                    
+                    // 添加用户消息
+                    messages.value.push({
+                        role: 'user',
+                        content: message
+                    });
+                    
+                    // 清空输入框
+                    newMessage.value = '';
+                    
+                    // 滚动到底部
+                    await nextTick();
+                    scrollToBottom();
+                    
                     try {
-                        isLoading.value = true;
-                        const messageData = {
-                            message: newMessage.value,
-                            application_id: parseInt(applicationId),
-                            conversation_id: currentConversationId.value,
-                            temperature: 0.7,
-                            max_tokens: 2000,
-                            session_id: sessionId.value
+                        // 准备请求数据
+                        const requestData = {
+                            session_id: sessionId.value,
+                            message: message
                         };
                         
-                        console.log('发送的消息数据:', messageData);
+                        let url;
+                        if (!currentConversationId.value) {
+                            // 新对话，先创建对话
+                            const createResponse = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    session_id: sessionId.value,
+                                    title: message.substring(0, 50)
+                                })
+                            });
+                            
+                            if (!createResponse.ok) {
+                                throw new Error('创建对话失败');
+                            }
+                            
+                            const conversationData = await createResponse.json();
+                            currentConversationId.value = conversationData.conversation_id;
+                            
+                            // 添加到对话列表
+                            conversations.value.unshift(conversationData);
+                        }
                         
-                        // 添加用户消息到界面
-                        const userMessage = appendMessage('user', newMessage.value);
+                        // 使用当前对话ID发送消息
+                        url = `${apiUrl}/api/chat/applications/${applicationId}/conversations/${currentConversationId.value}/messages/stream/`;
                         
-                        const tempMessage = newMessage.value;
-                        newMessage.value = '';
-                        await nextTick();
-                        scrollToBottom();
+                        // 添加助手消息占位
+                        const assistantMessage = {
+                            role: 'assistant',
+                            content: '',
+                            reasoning: ''
+                        };
+                        messages.value.push(assistantMessage);
                         
-                        const response = await fetch(`${apiUrl}/api/chat/stream/`, {
+                        // 发送消息
+                        const response = await fetch(url, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Accept': 'text/event-stream',
-                                'X-Requested-With': 'XMLHttpRequest'
                             },
-                            body: JSON.stringify(messageData)
+                            body: JSON.stringify(requestData)
                         });
                         
                         if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                            throw new Error('发送消息失败');
                         }
                         
+                        // 处理流式响应
                         const reader = response.body.getReader();
                         const decoder = new TextDecoder();
-                        let assistantMessage = '';
-                        let thinkingContent = '';
-                        let isThinking = false;
+                        let buffer = '';
+                        
+                        console.log('开始处理流式响应');
                         
                         while (true) {
                             const {value, done} = await reader.read();
-                            if (done) break;
+                            if (done) {
+                                console.log('流式响应结束');
+                                break;
+                            }
                             
-                            const chunk = decoder.decode(value);
+                            const chunk = decoder.decode(value, {stream: true});
                             console.log('收到数据块:', chunk);
                             
-                            const lines = chunk.split('\n');
+                            buffer += chunk;
+                            const lines = buffer.split('\n');
+                            buffer = lines.pop();
+                            
                             for (const line of lines) {
-                                if (line.startsWith('data: ')) {
-                                    const data = line.slice(6);
-                                    if (data === '[DONE]') {
-                                        console.log('流式响应完成');
-                                        // 刷新对话列表
-                                        await loadConversations();
-                                        break;
+                                if (!line.startsWith('data: ')) continue;
+                                
+                                const data = line.slice(6).trim();
+                                if (!data) continue;
+                                
+                                // 处理[DONE]消息
+                                if (data === '[DONE]') {
+                                    console.log('收到完成标记');
+                                    return;
+                                }
+                                
+                                // 处理JSON消息
+                                try {
+                                    const jsonData = JSON.parse(data);
+                                    console.log('解析的JSON数据:', jsonData);
+                                    
+                                    // 处理错误消息
+                                    if (jsonData.error) {
+                                        console.error('收到错误:', jsonData.error);
+                                        assistantMessage.content = `错误: ${jsonData.error}`;
+                                        continue;
                                     }
                                     
-                                    try {
-                                        const parsed = JSON.parse(data);
-                                        if (parsed.error) {
-                                            throw new Error(parsed.error);
-                                        }
-                                        
-                                        // 处理思考过程
-                                        if (parsed.reasoning_content) {
-                                            isThinking = true;
-                                            thinkingContent += parsed.reasoning_content;
-                                            // 更新或添加思考过程消息
-                                            const thinkingMessage = appendMessage('assistant', thinkingContent);
-                                            thinkingMessage.isThinking = true;
-                                        }
-                                        // 处理最终回答
-                                        else if (parsed.content) {
-                                            if (isThinking) {
-                                                // 如果之前有思考过程，添加最终回答
-                                                const finalAnswer = appendMessage('assistant', parsed.content);
-                                                isThinking = false;
-                                            } else {
-                                                assistantMessage += parsed.content;
-                                                // 更新最后一条消息或添加新消息
-                                                const assistantMessageObj = appendMessage('assistant', assistantMessage);
-                                                assistantMessageObj.isThinking = false;
-                                            }
-                                        }
-                                        
-                                        await nextTick();
-                                        scrollToBottom();
-                                    } catch (e) {
-                                        console.error('解析响应数据失败:', e);
+                                    // 处理reasoning_content
+                                    if (jsonData.reasoning_content) {
+                                        assistantMessage.reasoning += jsonData.reasoning_content;
                                     }
+                                    
+                                    // 处理content
+                                    if (jsonData.content) {
+                                        assistantMessage.content += jsonData.content;
+                                    }
+                                    
+                                    // 强制更新视图
+                                    messages.value = [...messages.value];
+                                    await nextTick();
+                                    scrollToBottom();
+                                } catch (e) {
+                                    console.error('解析响应数据失败:', e, '原始数据:', data);
                                 }
                             }
                         }
-                        
-                        // 如果没有收到任何响应，添加错误消息
-                        if (!assistantMessage && !thinkingContent) {
-                            appendMessage('assistant', '抱歉，没有收到有效的响应。请稍后重试。');
-                        }
-                        
                     } catch (error) {
-                        console.error('发送消息失败:', error);
-                        appendMessage('assistant', `发送消息失败: ${error.message}`);
+                        console.error('Error:', error);
+                        messages.value[messages.value.length - 1].content = `发送消息时出错: ${error.message}`;
                     } finally {
                         isLoading.value = false;
-                    }
-                };
-
-                function createMessage(role, content) {
-                    return {
-                        role: role,
-                        content: content,
-                        timestamp: new Date().toISOString()
-                    };
-                }
-
-                function appendMessage(role, content) {
-                    const message = createMessage(role, content);
-                    messages.value.push(message);
-                    return message;
-                }
-
-                function updateLastMessage(content) {
-                    if (messages.value.length > 0) {
-                        const lastMessage = messages.value[messages.value.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                            lastMessage.content = content;
-                        }
+                        await nextTick();
+                        scrollToBottom();
                     }
                 }
 
                 onMounted(() => {
-                    // 可以在这里添加初始化逻辑
+                    // 初始化时加载对话列表
+                    if (isOpen.value) {
+                        loadConversations();
+                    }
                 });
 
                 return {
@@ -701,12 +771,13 @@
                     messages,
                     conversations,
                     newMessage,
-                    messagesContainer,
+                    chatMessages,
                     isLoading,
                     currentConversationId,
+                    currentConversationTitle,
                     toggleChat,
                     toggleSidebar,
-                    newConversation,
+                    createNewConversation,
                     switchConversation,
                     sendMessage,
                     formatMessage,
@@ -715,16 +786,17 @@
             }
         });
 
-        // 注册所有图标组件
-        Object.entries(icons).forEach(([name, component]) => {
-            if (component) {
-                app.component(name, component);
-                app.component(name.toLowerCase(), component);
-            }
-        });
+        // 注册 Element Plus 图标
+        const icons = {
+            ChatDotRound: ElementPlusIconsVue.ChatDotRound,
+            Plus: ElementPlusIconsVue.Plus,
+            Menu: ElementPlusIconsVue.Menu,
+            Close: ElementPlusIconsVue.Close
+        };
 
-        // 注册 el-icon 组件
-        app.component('el-icon', ElementPlus.ElIcon);
+        for (const [key, component] of Object.entries(icons)) {
+            app.component(key, component);
+        }
 
         app.use(ElementPlus);
         app.mount('#app');
