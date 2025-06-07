@@ -136,27 +136,37 @@
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .message-item.user-message {
+            flex-direction: row-reverse;
         }
 
         .message-avatar {
             width: 40px;
             height: 40px;
-            border-radius: 8px;
+            border-radius: 50%;
             background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .message-avatar img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
         }
 
         .message-content {
             flex: 1;
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
         }
 
         .message-text {
@@ -166,11 +176,22 @@
             font-size: 14px;
             line-height: 1.6;
             color: var(--text-color);
+            word-break: break-word;
+            display: inline-block;
+            max-width: fit-content;
         }
 
         .message-text.user {
             background: var(--primary-color);
             color: white;
+            border-radius: 12px 12px 0 12px;
+            align-self: flex-end;
+        }
+
+        .message-text.assistant {
+            background: var(--hover-color);
+            border-radius: 12px 12px 12px 0;
+            align-self: flex-start;
         }
 
         /* 聊天输入区域 */
@@ -400,16 +421,31 @@
             position: relative;
         }
 
-        /* 添加思考过程样式 */
+        /* 修改思考过程样式 */
         .thinking-process {
             padding: 8px 12px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border-left: 3px solid var(--primary-color);
+            margin-bottom: 2px;
+            background: #f0f7ff;
+            border-left: 3px solid #4f46e5;
             border-radius: 4px;
             font-size: 13px;
-            color: #666;
+            color: #4b5563;
             white-space: pre-wrap;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .thinking-process::before {
+            content: "思考过程";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            font-size: 12px;
+            color: #4f46e5;
+            font-weight: 500;
+            background: #f0f7ff;
+            padding: 0 4px;
         }
     </style>
 </head>
@@ -580,12 +616,15 @@
                 // 更新聊天内容
                 const chatContent = document.querySelector('.chat-content');
                 chatContent.innerHTML = data.map(msg => `
-                    <div class="message-item">
+                    <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
                         <div class="message-avatar">
-                            <img src="${msg.role === 'user' ? 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${msg.role === 'user' ? '用户' : 'MaxKB'}">
+                            <img src="${msg.role === 'user' ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=user' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${msg.role === 'user' ? '用户' : 'MaxKB'}">
                         </div>
                         <div class="message-content">
-                            <div class="message-text ${msg.role === 'user' ? 'user' : ''}">
+                            ${msg.role === 'assistant' && msg.reasoning ? `
+                                <div class="thinking-process">${msg.reasoning}</div>
+                            ` : ''}
+                            <div class="message-text ${msg.role === 'user' ? 'user' : 'assistant'}">
                                 ${msg.content}
                             </div>
                         </div>
@@ -641,11 +680,11 @@
         function appendMessage(role, content, reasoning = '') {
             const chatContent = document.querySelector('.chat-content');
             const messageItem = document.createElement('div');
-            messageItem.className = 'message-item';
+            messageItem.className = `message-item ${role === 'user' ? 'user-message' : ''}`;
             
             let messageHtml = `
                 <div class="message-avatar">
-                    <img src="${role === 'user' ? 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${role === 'user' ? '用户' : 'MaxKB'}">
+                    <img src="${role === 'user' ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=user' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${role === 'user' ? '用户' : 'MaxKB'}">
                 </div>
                 <div class="message-content">
             `;
@@ -658,7 +697,7 @@
             }
 
             messageHtml += `
-                    <div class="message-text ${role === 'user' ? 'user' : ''}">
+                    <div class="message-text ${role === 'user' ? 'user' : 'assistant'}">
                         ${content}
                     </div>
                 </div>
@@ -762,14 +801,15 @@
                                 currentReasoning += jsonData.reasoning_content;
                                 if (thinkingProcess) {
                                     thinkingProcess.style.display = 'block';
-                                    thinkingProcess.innerHTML = currentReasoning.replace(/\n/g, '<br>');
+                                    thinkingProcess.innerHTML = currentReasoning.replace(/\n+/g, '<br>');
+                                    scrollToBottom();
                                 }
                             }
                             
                             // 处理content
                             if (jsonData.content) {
                                 currentContent += jsonData.content;
-                                messageText.innerHTML = currentContent.replace(/\n/g, '<br>');
+                                messageText.innerHTML = currentContent.replace(/\n+/g, '<br>');
                                 scrollToBottom();
                             }
                         } catch (e) {
@@ -793,7 +833,10 @@
         // 滚动到底部
         function scrollToBottom() {
             const chatContent = document.querySelector('.chat-content');
-            chatContent.scrollTop = chatContent.scrollHeight;
+            chatContent.scrollTo({
+                top: chatContent.scrollHeight,
+                behavior: 'smooth'
+            });
         }
 
         // 格式化时间

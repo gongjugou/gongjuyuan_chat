@@ -233,6 +233,12 @@ class ChatMessage(models.Model):
         verbose_name="角色"
     )
     content = models.TextField(verbose_name="内容")
+    reasoning = models.TextField(
+        verbose_name="思考过程",
+        blank=True,
+        null=True,
+        help_text="AI助手的思考过程"
+    )
     timestamp = models.DateTimeField(default=timezone.now, verbose_name="时间戳")
     tokens = models.PositiveIntegerField(default=0, verbose_name="token数")
     cost = models.DecimalField(

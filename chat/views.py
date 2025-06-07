@@ -774,6 +774,7 @@ class MessageStreamView(View):
                     total_chunks = 0
                     total_content_length = 0
                     full_response = ""
+                    full_reasoning = ""
 
                     # 逐步接收并处理响应
                     print("[yellow]开始接收响应...[/]")
@@ -797,7 +798,7 @@ class MessageStreamView(View):
                         if chunk.choices[0].delta.reasoning_content:
                             content = chunk.choices[0].delta.reasoning_content
                             total_content_length += len(content)
-                            full_response += content
+                            full_reasoning += content
                             data = f"data: {json.dumps({'reasoning_content': content})}\n\n"
                             yield data
 
@@ -806,6 +807,7 @@ class MessageStreamView(View):
                         conversation=conversation,
                         role='assistant',
                         content=full_response,
+                        reasoning=full_reasoning,
                         tokens=len(full_response) // 4,
                         model_used=application.model
                     )
