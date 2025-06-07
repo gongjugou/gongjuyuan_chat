@@ -192,3 +192,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # API配置
 API_URL = 'http://127.0.0.1:7000'  # 开发环境
 # API_URL = 'https://您的域名'  # 生产环境
+import os
+
+# ... existing code ...
+
+# 静态文件设置
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# ... existing code ...
