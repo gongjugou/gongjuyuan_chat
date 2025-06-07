@@ -396,8 +396,8 @@
                     <div class="chat-main">
                         <div class="chat-messages" ref="chatMessages">
                             <div v-for="(message, index) in messages" :key="index" class="message" :class="message.role + '-message'">
-                                <div class="message-content" v-html="formatMessage(message.content)"></div>
                                 <div v-if="message.reasoning" class="thinking-process" v-html="formatMessage(message.reasoning)"></div>
+                                <div class="message-content" v-html="formatMessage(message.content)"></div>
                             </div>
                         </div>
                         <div class="chat-input">

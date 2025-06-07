@@ -739,14 +739,18 @@ class MessageStreamView(View):
 
                     # 准备消息
                     messages = []
+                    # 添加系统角色消息
                     if application.system_role:
                         messages.append({
                             "role": "system",
                             "content": application.system_role
                         })
                     
-                    # 获取历史消息
-                    history_messages = conversation.messages.all().order_by('timestamp')
+                    # 获取历史消息（只获取用户和助手的消息）
+                    history_messages = conversation.messages.filter(
+                        role__in=['user', 'assistant']
+                    ).order_by('timestamp')
+                    
                     for msg in history_messages:
                         messages.append({
                             "role": msg.role,
