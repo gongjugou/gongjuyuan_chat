@@ -3,242 +3,574 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聊天组件设计页面</title>
+    <title>智能客服</title>
+    <!-- 移除 Element Plus 的 CSS -->
     <style>
+        /* 添加图标字体 */
+        @import url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css');
+        
         :root {
-            --primary-color: #409EFF;
-            --text-color: #303133;
-            --text-color-secondary: #606266;
-            --border-color: #DCDFE6;
-            --background-color: #F5F7FA;
-            --hover-color: #ecf5ff;
-            --shadow-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --bg-color: #ffffff;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+            --hover-color: #f3f4f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
-        * {
+        /* 重置样式，避免被外部样式影响 */
+        .chat-widget * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.5;
-            color: var(--text-color);
-            background-color: var(--background-color);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        /* 聊天窗口容器 */
+        .chat-widget {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 999999;
+            font-size: 14px;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px var(--shadow-color);
+        .chat-container {
+            width: 380px;
+            height: 600px;
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
         }
 
-        .header h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
+        .chat-container.expanded {
+            width: 50vw;
+            height: 100vh;
+            right: 0;
+            bottom: 0;
+            border-radius: 0;
         }
 
-        .header p {
-            color: var(--text-color-secondary);
-        }
-
-        .design-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px var(--shadow-color);
-        }
-
-        .design-section h2 {
-            color: var(--text-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+        /* 聊天窗口头部 */
+        .chat-header {
+            padding: 16px 20px;
+            background: var(--bg-color);
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100000;
         }
 
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-light);
+            background: transparent;
+            position: relative;
+            z-index: 100000;
+        }
+
+        .chat-header-btn:hover {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .chat-header-btn.active {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .chat-header-btn i {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        /* 聊天内容区域 */
+        .chat-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .message-item {
+            display: flex;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
-        .color-item {
-            padding: 15px;
+        .message-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
-            text-align: center;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        .color-preview {
+        .message-avatar img {
             width: 100%;
-            height: 100px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            height: 100%;
+            object-fit: contain;
         }
 
-        .component-preview {
+        .message-content {
+            flex: 1;
+        }
+
+        .message-text {
+            padding: 12px 16px;
+            background: var(--hover-color);
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .message-text.user {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 聊天输入区域 */
+        .chat-input-area {
+            padding: 16px 20px;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            background: var(--hover-color);
+            color: var(--text-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .button-group {
+            cursor: pointer;
+            font-size: 14px;
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
 
-        .button {
-            padding: 10px 20px;
+        .new-chat-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .new-chat-btn i {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .send-btn {
+            padding: 0 24px;
+            background: var(--primary-color);
+            color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 机器人头像 */
+        .robot-avatar {
+            width: 60px;
+            height: 60px;
+            background: transparent;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            overflow: hidden;
         }
 
-        .button-primary {
-            background-color: var(--primary-color);
-            color: white;
+        .robot-avatar:hover {
+            transform: translateY(-5px);
         }
 
-        .button-secondary {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input {
+        .robot-avatar img {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s;
+            height: 100%;
+            object-fit: contain;
         }
 
-        .input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+        /* 自定义滚动条 */
+        .chat-content::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .message-bubble {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            background-color: white;
-            box-shadow: 0 2px 8px var(--shadow-color);
+        .chat-content::-webkit-scrollbar-track {
+            background: var(--hover-color);
         }
 
-        .message-bubble.user {
-            background-color: var(--primary-color);
-            color: white;
-            margin-left: auto;
+        .chat-content::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 3px;
         }
 
-        .message-bubble.assistant {
-            background-color: var(--background-color);
-            margin-right: auto;
+        .chat-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
         }
 
+        /* 移动端适配 */
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
+            .chat-widget {
+                right: 0;
+                bottom: 0;
             }
 
-            .header {
-                margin-bottom: 20px;
-                padding: 15px;
+            .chat-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
             }
 
-            .design-section {
-                padding: 15px;
+            .chat-container.expanded {
+                width: 100%;
             }
+        }
 
-            .color-palette {
-                grid-template-columns: 1fr;
-            }
+        /* 历史记录列表样式 */
+        .history-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-height: 400px;
+            background: #ffffff;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .history-list.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .history-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+            background: #f3f4f6;
+        }
+
+        .history-items {
+            max-height: 350px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+
+        .history-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        .history-item:hover {
+            background: #f3f4f6;
+        }
+
+        .history-item-title {
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .history-item-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* 确保历史记录按钮可以正常点击 */
+        .chat-header-btn {
+            position: relative;
+            z-index: 1001;
+            cursor: pointer;
+        }
+
+        /* 确保历史记录列表在聊天容器内正确定位 */
+        .chat-header {
+            position: relative;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .chat-header-actions {
+            position: relative;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>聊天组件设计页面</h1>
-            <p>用于预览和测试聊天组件的各种样式和交互效果</p>
+    <div class="chat-widget">
+        <!-- 机器人头像 -->
+        <div class="robot-avatar">
+            <img src="https://maxkb.gongjuyuan.com/ui/MaxKB.gif" alt="智能客服">
         </div>
 
-        <div class="design-section">
-            <h2>颜色方案</h2>
-            <div class="color-palette">
-                <div class="color-item">
-                    <div class="color-preview" style="background-color: var(--primary-color);"></div>
-                    <p>主色调</p>
+        <!-- 聊天窗口 -->
+        <div class="chat-container" style="display: none;">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <span class="chat-header-title">智能客服</span>
                 </div>
-                <div class="color-item">
-                    <div class="color-preview" style="background-color: var(--text-color);"></div>
-                    <p>文本颜色</p>
+                <div class="chat-header-actions">
+                    <div class="chat-header-btn" id="historyBtn" title="历史记录">
+                        <i class="ri-history-line"></i>
+                    </div>
+                    <div class="chat-header-btn" title="放大">
+                        <i class="ri-fullscreen-line"></i>
+                    </div>
+                    <div class="chat-header-btn" title="关闭">
+                        <i class="ri-close-line"></i>
+                    </div>
                 </div>
-                <div class="color-item">
-                    <div class="color-preview" style="background-color: var(--background-color);"></div>
-                    <p>背景色</p>
-                </div>
-                <div class="color-item">
-                    <div class="color-preview" style="background-color: var(--hover-color);"></div>
-                    <p>悬停色</p>
+                <!-- 历史记录列表 -->
+                <div class="history-list" id="historyList">
+                    <div class="history-header">历史记录</div>
+                    <div class="history-items">
+                        <div class="history-item">
+                            <div class="history-item-title">如何修改账户密码？</div>
+                            <div class="history-item-time">2024-03-20 15:30</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-item-title">产品退换货政策咨询</div>
+                            <div class="history-item-time">2024-03-20 14:20</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-item-title">订单状态查询</div>
+                            <div class="history-item-time">2024-03-20 11:15</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="design-section">
-            <h2>按钮样式</h2>
-            <div class="button-group">
-                <button class="button button-primary">主要按钮</button>
-                <button class="button button-secondary">次要按钮</button>
-            </div>
-        </div>
-
-        <div class="design-section">
-            <h2>输入框样式</h2>
-            <div class="input-group">
-                <input type="text" class="input" placeholder="请输入消息...">
-            </div>
-        </div>
-
-        <div class="design-section">
-            <h2>消息气泡样式</h2>
-            <div class="component-preview">
-                <div class="message-bubble user">
-                    这是一条用户消息
+            <div class="chat-content">
+                <div class="message-item">
+                    <div class="message-avatar">
+                        <img src="https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg" alt="MaxKB">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            您好！我是您的智能客服助手，很高兴为您服务。请问有什么可以帮您？
+                        </div>
+                    </div>
                 </div>
-                <div class="message-bubble assistant">
-                    这是一条助手消息
+            </div>
+
+            <div class="chat-input-area">
+                <button class="new-chat-btn">
+                    <i class="ri-add-line"></i>
+                    新建对话
+                </button>
+                <div class="input-container">
+                    <textarea class="chat-input" placeholder="请输入您的问题..."></textarea>
+                    <button class="send-btn">发送</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // 历史记录功能
+        const historyBtn = document.getElementById('historyBtn');
+        const historyList = document.getElementById('historyList');
+
+        console.log('历史记录按钮元素:', historyBtn);
+        console.log('历史记录列表元素:', historyList);
+
+        // 点击历史记录按钮
+        historyBtn.onclick = function(e) {
+            console.log('历史记录按钮被点击');
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('切换前历史记录列表显示状态:', historyList.classList.contains('show'));
+            historyList.classList.toggle('show');
+            console.log('切换后历史记录列表显示状态:', historyList.classList.contains('show'));
+        };
+
+        // 点击历史记录项
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.onclick = function(e) {
+                e.stopPropagation();
+                console.log('历史记录项被点击');
+                const title = this.querySelector('.history-item-title').textContent;
+                console.log('选中的历史记录:', title);
+                historyList.classList.remove('show');
+            };
+        });
+
+        // 点击其他地方关闭历史记录列表
+        document.addEventListener('click', function(e) {
+            console.log('文档点击事件触发');
+            console.log('点击目标:', e.target);
+            console.log('是否点击在历史记录列表内:', historyList.contains(e.target));
+            console.log('是否点击在历史记录按钮内:', historyBtn.contains(e.target));
+            
+            if (!historyList.contains(e.target) && !historyBtn.contains(e.target)) {
+                console.log('关闭历史记录列表');
+                historyList.classList.remove('show');
+            }
+        });
+
+        // 阻止历史记录列表的点击事件冒泡
+        historyList.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // 聊天窗口展开/收起
+        const chatContainer = document.querySelector('.chat-container');
+        const expandBtn = document.querySelector('.chat-header-btn[title="放大"]');
+        const closeBtn = document.querySelector('.chat-header-btn[title="关闭"]');
+        const robotAvatar = document.querySelector('.robot-avatar');
+        const chatWidget = document.querySelector('.chat-widget');
+        let isExpanded = false;
+
+        console.log('聊天容器元素:', chatContainer);
+        console.log('展开按钮元素:', expandBtn);
+        console.log('关闭按钮元素:', closeBtn);
+        console.log('机器人头像元素:', robotAvatar);
+        console.log('聊天组件元素:', chatWidget);
+
+        // 初始化时隐藏聊天窗口
+        chatContainer.style.display = 'none';
+
+        expandBtn.onclick = function() {
+            console.log('展开按钮被点击');
+            isExpanded = !isExpanded;
+            chatContainer.classList.toggle('expanded');
+            chatWidget.style.right = isExpanded ? '0' : '20px';
+            chatWidget.style.bottom = isExpanded ? '0' : '20px';
+            this.querySelector('i').className = isExpanded ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line';
+            this.title = isExpanded ? '收起' : '放大';
+        };
+
+        closeBtn.onclick = function() {
+            console.log('关闭按钮被点击');
+            chatContainer.style.display = 'none';
+            robotAvatar.style.display = 'flex';
+            if (isExpanded) {
+                isExpanded = false;
+                chatContainer.classList.remove('expanded');
+                chatWidget.style.right = '20px';
+                chatWidget.style.bottom = '20px';
+                expandBtn.querySelector('i').className = 'ri-fullscreen-line';
+                expandBtn.title = '放大';
+            }
+        };
+
+        robotAvatar.onclick = function() {
+            console.log('机器人头像被点击');
+            chatContainer.style.display = 'flex';
+            robotAvatar.style.display = 'none';
+        };
+
+        // 输入框自动调整高度
+        const chatInput = document.querySelector('.chat-input');
+        chatInput.oninput = function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        };
+    </script>
 </body>
 </html> 
