@@ -53,11 +53,161 @@
             cursor: pointer;
             box-shadow: 0 4px 12px var(--shadow-color);
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
         .chat-button:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 16px var(--shadow-color);
+        }
+
+        .robot-avatar {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), #36cfc9);
+            border-radius: 50%;
+        }
+
+        .robot-head {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 8px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .robot-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .robot-eyes {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .robot-eye {
+            width: 6px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            position: relative;
+            animation: scan 2s infinite;
+        }
+
+        .robot-eye::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+        }
+
+        .robot-mouth {
+            width: 12px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 1px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        .robot-mouth::before,
+        .robot-mouth::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            top: -1px;
+        }
+
+        .robot-mouth::before {
+            left: 0;
+        }
+
+        .robot-mouth::after {
+            right: 0;
+        }
+
+        .robot-antenna {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .antenna-line {
+            width: 2px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        .antenna-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            margin-top: 1px;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(2deg); }
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scaleX(1); opacity: 1; }
+            50% { transform: scaleX(0.8); opacity: 0.8; }
+        }
+
+        @keyframes glow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.6; }
+        }
+
+        .chat-button:hover .robot-head {
+            animation: float 1.5s ease-in-out infinite;
+        }
+
+        .chat-button:hover .robot-eye {
+            animation: scan 1s infinite;
+        }
+
+        .chat-button:hover .robot-mouth {
+            animation: pulse 1s infinite;
+        }
+
+        .chat-button:hover .antenna-dot {
+            animation: glow 0.8s infinite;
         }
 
         .chat-window {
@@ -67,15 +217,16 @@
             width: 380px;
             height: 600px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px var(--shadow-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .chat-window.open {
@@ -85,84 +236,93 @@
         }
 
         .chat-header {
-            padding: 16px;
-            background-color: var(--primary-color);
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--primary-color), #36cfc9);
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px var(--shadow-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .chat-header-left {
             display: flex;
             align-items: center;
             gap: 12px;
+            font-size: 16px;
+            font-weight: 500;
         }
 
         .chat-header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .chat-content {
             display: flex;
             flex: 1;
             overflow: hidden;
+            background-color: #fafafa;
         }
 
         .chat-sidebar {
             width: 0;
-            background-color: var(--background-color);
-            transition: width 0.3s;
+            background-color: white;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .chat-sidebar.show {
-            width: 240px;
+            width: 260px;
         }
 
         .chat-sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: white;
+            font-weight: 500;
+            color: var(--text-color);
         }
 
         .chat-sidebar-content {
-            padding: 12px;
+            padding: 16px;
             overflow-y: auto;
-            height: calc(100% - 53px);
+            height: calc(100% - 57px);
         }
 
         .conversation-item {
-            padding: 12px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             cursor: pointer;
             margin-bottom: 8px;
             transition: all 0.3s;
             background-color: white;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
         }
 
         .conversation-item:hover {
             background-color: var(--hover-color);
             border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .conversation-item.active {
             background-color: var(--hover-color);
             border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .conversation-title {
             font-size: 14px;
             color: var(--text-color);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -178,18 +338,18 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: var(--background-color);
+            background-color: #fafafa;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
-            background-color: var(--background-color);
+            background-color: #fafafa;
         }
 
         .message {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             animation: fadeIn 0.3s ease;
@@ -209,17 +369,21 @@
         }
 
         .message-content {
-            max-width: 80%;
+            max-width: 85%;
             padding: 12px 16px;
-            border-radius: 12px;
+            border-radius: 16px;
             background-color: white;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            line-height: 1.6;
+            font-size: 14px;
+            color: var(--text-color);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .message.user .message-content {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), #36cfc9);
             color: white;
+            border: none;
         }
 
         .message.assistant .message-content {
@@ -229,18 +393,19 @@
 
         .thinking-process {
             margin-top: 8px;
-            padding: 12px;
+            padding: 12px 16px;
             background-color: var(--thinking-bg);
             border: 1px solid var(--thinking-border);
-            border-radius: 8px;
-            font-size: 0.9em;
+            border-radius: 12px;
+            font-size: 13px;
             color: var(--text-color-secondary);
-            line-height: 1.5;
+            line-height: 1.6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
         }
 
         .thinking-process::before {
             content: "思考过程：";
-            font-weight: bold;
+            font-weight: 500;
             color: var(--text-color);
             display: block;
             margin-bottom: 4px;
@@ -264,50 +429,59 @@
         }
 
         .chat-input {
-            padding: 16px;
+            padding: 16px 20px;
             background-color: white;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
             display: flex;
             gap: 12px;
-            box-shadow: 0 -2px 8px var(--shadow-color);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .chat-input input {
             flex: 1;
-            padding: 10px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
             outline: none;
             font-size: 14px;
             transition: all 0.3s;
+            background-color: #fafafa;
         }
 
         .chat-input input:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+            background-color: white;
         }
 
         .chat-input button {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary-color), #36cfc9);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .chat-input button:hover {
-            opacity: 0.9;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-input button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .chat-input button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         /* 移动端适配 */
@@ -320,23 +494,24 @@
                 border-radius: 0;
             }
 
-            .chat-button {
-                width: 50px;
-                height: 50px;
+            .chat-header {
+                padding: 12px 16px;
             }
 
-            .chat-sidebar {
-                position: absolute;
-                left: -240px;
-                top: 0;
-                bottom: 0;
-                background: white;
-                transition: left 0.3s;
-                z-index: 1001;
+            .chat-messages {
+                padding: 16px;
             }
 
-            .chat-sidebar.show {
-                left: 0;
+            .chat-input {
+                padding: 12px 16px;
+            }
+
+            .chat-input input {
+                padding: 10px 14px;
+            }
+
+            .chat-input button {
+                padding: 10px 16px;
             }
         }
 
@@ -347,16 +522,16 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--background-color);
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #c0c4cc;
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #909399;
+            background: rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -364,7 +539,21 @@
     <div id="app">
         <div class="chat-widget">
             <div class="chat-button" @click="toggleChat">
-                <el-icon :size="24"><ChatDotRound /></el-icon>
+                <div class="robot-avatar">
+                    <div class="robot-head">
+                        <div class="robot-face">
+                            <div class="robot-eyes">
+                                <div class="robot-eye"></div>
+                                <div class="robot-eye"></div>
+                            </div>
+                            <div class="robot-mouth"></div>
+                        </div>
+                        <div class="robot-antenna">
+                            <div class="antenna-line"></div>
+                            <div class="antenna-dot"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="chat-window" :class="{ 'open': isOpen }">
                 <div class="chat-header">
@@ -420,6 +609,17 @@
         const { ElMessage } = ElementPlus;
         const { ChatDotRound, Close, Menu, Plus } = ElementPlusIconsVue;
 
+        // 获取URL参数
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 获取当前域名
+        function getBaseUrl() {
+            return window.location.origin;
+        }
+
         const app = createApp({
             setup() {
                 const isOpen = ref(false);
@@ -428,12 +628,16 @@
                 const conversations = ref([]);
                 const newMessage = ref('');
                 const chatMessages = ref(null);
-                const apiUrl = '{{ api_url }}';
-                const applicationId = '{{ application_id }}';
+                // 从URL参数获取配置，如果没有则使用模板变量
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
                 const currentConversationId = ref(null);
                 const isLoading = ref(false);
                 const sessionId = ref(null);
                 const currentConversationTitle = ref('');
+
+                console.log('API URL:', apiUrl);
+                console.log('Application ID:', applicationId);
 
                 // 生成会话ID
                 function generateSessionId() {

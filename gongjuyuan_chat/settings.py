@@ -60,6 +60,12 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ORIGINS = [
+    "http://localhost:5173/",  # Vue.js开发服务器
+    "https://www.example.com",  # 生产环境的前端域名
+]
+
 
 # 添加以下配置支持长时间运行的连接
 # 适合开发环境，生产环境需要更专业的配置
@@ -182,3 +188,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# API配置
+API_URL = 'http://127.0.0.1:7000'  # 开发环境
+# API_URL = 'https://您的域名'  # 生产环境

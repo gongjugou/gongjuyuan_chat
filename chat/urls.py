@@ -9,6 +9,11 @@ urlpatterns = [
          views.ChatWidgetView.as_view(), 
          name='chat_widget'),
     
+    # 设计页面路由
+    path('design/', 
+         views.DesignView.as_view(), 
+         name='design_page'),
+    
     # 应用相关
     path('applications/<int:application_id>/', 
          views.ApplicationDetailView.as_view(), 
