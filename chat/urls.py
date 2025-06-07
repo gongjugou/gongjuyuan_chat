@@ -10,7 +10,7 @@ urlpatterns = [
          name='chat_widget'),
     
     # 设计页面路由
-    path('design/', 
+    path('design/<int:application_id>/', 
          views.DesignView.as_view(), 
          name='design_page'),
     

@@ -880,12 +880,21 @@ class DesignView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        application_id = kwargs.get('application_id')
+        
+        # 验证应用是否存在
+        try:
+            application = Application.objects.get(id=application_id, is_active=True)
+        except Application.DoesNotExist:
+            raise Http404("应用不存在或未激活")
+        
         # 获取API URL
         api_url = self.request.GET.get('api_url')
         if not api_url:
             api_url = settings.API_URL if hasattr(settings, 'API_URL') else self.request.build_absolute_uri('/').rstrip('/')
         
         context.update({
+            'application_id': application_id,
             'api_url': api_url
         })
         return context
