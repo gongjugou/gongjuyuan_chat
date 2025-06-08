@@ -5,9 +5,7 @@ app_name = 'chat'
 
 urlpatterns = [
     # UI 路由
-    path('ui/<int:application_id>/', 
-         views.ChatWidgetView.as_view(), 
-         name='chat_widget'),
+
     
     # 设计页面路由
     path('design/<int:application_id>/', 
@@ -39,5 +37,4 @@ urlpatterns = [
          views.MessageStreamView.as_view(), 
          name='message_stream'),
 
-    path('chat/<int:app_id>/', views.ChatView.as_view(), name='chat'),
 ]
