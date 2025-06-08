@@ -123,11 +123,7 @@ class Application(models.Model):
         default=False,
         verbose_name="显示思考过程"
     )
-    is_public = models.BooleanField(
-        default=False,
-        verbose_name="是否公开",
-        help_text="公开的应用可以被所有用户查看和使用"
-    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     is_active = models.BooleanField(default=True, verbose_name="是否激活")

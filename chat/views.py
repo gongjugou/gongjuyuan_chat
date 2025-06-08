@@ -81,16 +81,7 @@ class ChatStreamView(View):
                         status=403
                     )
                 
-                # 检查应用是否公开
-                if not application.is_public:
-                    return JsonResponse(
-                        {
-                            "error": "应用未公开",
-                            "code": "APPLICATION_NOT_PUBLIC",
-                            "status": 403
-                        },
-                        status=403
-                    )
+  
                 
                 print(f"\n[2/7] 查询应用: {time.time() - app_start:.3f}秒")
                 print(f"应用名称: {application.name}")
@@ -458,9 +449,7 @@ class ApplicationDetailView(APIView):
             if not application.is_active:
                 raise ApplicationNotActiveError("应用未激活")
             
-            # 检查应用是否公开
-            if not application.is_public:
-                raise ApplicationNotPublicError("应用未公开")
+  
             
             serializer = ApplicationSerializer(application)
             return Response(serializer.data)
@@ -500,8 +489,8 @@ class ApplicationListView(APIView):
     
     def get(self, request):
         try:
-            # 只获取公开且激活的应用
-            applications = Application.objects.filter(is_active=True, is_public=True)
+            # 只获取激活的应用
+            applications = Application.objects.filter(is_active=True,)
             serializer = ApplicationSerializer(applications, many=True)
             return Response(serializer.data)
         except Exception as e:
@@ -734,16 +723,7 @@ class MessageStreamView(View):
                         status=403
                     )
                 
-                # 检查应用是否公开
-                if not application.is_public:
-                    return JsonResponse(
-                        {
-                            "error": "应用未公开",
-                            "code": "APPLICATION_NOT_PUBLIC",
-                            "status": 403
-                        },
-                        status=403
-                    )
+      
             except Application.DoesNotExist:
                 return JsonResponse(
                     {"error": "应用不存在"},
@@ -1022,9 +1002,7 @@ class DesignView(TemplateView):
             if not application.is_active:
                 raise ApplicationNotActiveError("应用未激活")
             
-            # 检查应用是否公开
-            if not application.is_public:
-                raise ApplicationNotPublicError("应用未公开")
+
             
         except Application.DoesNotExist:
             raise Http404("应用不存在")

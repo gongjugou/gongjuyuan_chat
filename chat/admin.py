@@ -21,21 +21,7 @@ class ActiveModelFilter(admin.SimpleListFilter):
         if self.value() == 'no':
             return queryset.filter(is_active=False)
 
-class PublicFilter(admin.SimpleListFilter):
-    title = '公开状态'
-    parameter_name = 'is_public'
 
-    def lookups(self, request, model_admin):
-        return (
-            ('yes', '公开'),
-            ('no', '私有'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'yes':
-            return queryset.filter(is_public=True)
-        if self.value() == 'no':
-            return queryset.filter(is_public=False)
 
 # 内联管理类
 class ChatMessageInline(admin.TabularInline):
@@ -75,12 +61,12 @@ class ModelUsageStatInline(admin.TabularInline):
 # 主管理类
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'model', 'embedding_model', 'is_public', 'is_active')
-    list_filter = ('is_public', 'is_active')
+    list_display = ('name', 'user', 'model', 'embedding_model', 'is_active')
+    list_filter = ('is_active',)
     search_fields = ('name', 'description', 'user__username')
     fieldsets = (
         ('基本信息', {
-            'fields': ('name', 'description', 'user', 'is_public', 'is_active')
+            'fields': ('name', 'description', 'user', 'is_active')
         }),
         ('模型设置', {
             'fields': ('model', 'embedding_model')
