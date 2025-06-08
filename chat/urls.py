@@ -38,4 +38,6 @@ urlpatterns = [
     path('applications/<int:application_id>/conversations/<str:conversation_id>/messages/stream/', 
          views.MessageStreamView.as_view(), 
          name='message_stream'),
+
+    path('chat/<int:app_id>/', views.ChatView.as_view(), name='chat'),
 ]

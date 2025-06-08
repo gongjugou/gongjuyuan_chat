@@ -31,6 +31,7 @@ from wsgiref.util import FileWrapper
 import io
 from django.http import Http404
 from django.template import Template, Context
+from .services import KnowledgeService
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -1131,3 +1132,127 @@ class DesignView(TemplateView):
             'api_url': api_url
         })
         return context
+
+class ChatView(APIView):
+    """聊天视图"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request, app_id):
+        try:
+            # 获取应用
+            application = get_object_or_404(Application, id=app_id, is_active=True)
+            
+            # 获取会话ID
+            session_id = request.data.get('session_id')
+            if not session_id:
+                return Response(
+                    {"error": "请提供会话ID"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # 获取或创建会话
+            conversation, created = ChatConversation.objects.get_or_create(
+                session_id=session_id,
+                application=application,
+                defaults={
+                    'title': '新对话',
+                    'model': application.model
+                }
+            )
+            
+            # 获取用户消息
+            user_message = request.data.get('message')
+            if not user_message:
+                return Response(
+                    {"error": "请提供消息内容"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # 保存用户消息
+            user_msg = ChatMessage.objects.create(
+                conversation=conversation,
+                role='user',
+                content=user_message
+            )
+            
+            # 如果应用使用了知识库，获取相关知识
+            knowledge_context = ""
+            if application.embedding_model:
+                knowledge_service = KnowledgeService(application)
+                knowledge_context = knowledge_service.format_knowledge_context(user_message)
+            
+            # 准备系统消息
+            system_message = application.system_role
+            if knowledge_context:
+                system_message += f"\n\n{knowledge_context}"
+            
+            # 准备对话历史
+            messages = [
+                {"role": "system", "content": system_message}
+            ]
+            
+            # 添加历史消息
+            history_messages = conversation.messages.filter(
+                role__in=['user', 'assistant']
+            ).order_by('timestamp')[:10]  # 只取最近10条消息
+            
+            for msg in history_messages:
+                messages.append({
+                    "role": msg.role,
+                    "content": msg.content
+                })
+            
+            # 调用AI模型
+            start_time = time.time()
+            client = OpenAI(
+                base_url=application.model.api_url,
+                api_key=application.model.api_key
+            )
+            
+            response = client.chat.completions.create(
+                model=application.model.model_name,
+                messages=messages,
+                stream=True
+            )
+            
+            # 处理流式响应
+            assistant_message = ""
+            reasoning = ""
+            
+            for chunk in response:
+                if not chunk.choices:
+                    continue
+                    
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    assistant_message += content
+                    
+                if chunk.choices[0].delta.reasoning_content:
+                    content = chunk.choices[0].delta.reasoning_content
+                    reasoning += content
+            
+            # 计算耗时
+            duration = time.time() - start_time
+            
+            # 保存助手消息
+            assistant_msg = ChatMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=assistant_message,
+                reasoning=reasoning if application.show_reasoning else None,
+                model_used=application.model,
+                latency=duration
+            )
+            
+            return Response({
+                'message': assistant_message,
+                'reasoning': reasoning if application.show_reasoning else None,
+                'session_id': session_id,
+                'conversation_id': conversation.conversation_id
+            })
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

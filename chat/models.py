@@ -80,7 +80,7 @@ class Application(models.Model):
     description = models.TextField(verbose_name="应用描述", blank=True)
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='applications',
         verbose_name="创建者",
         null=True,
@@ -91,6 +91,26 @@ class Application(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         verbose_name="使用的模型"
+    )
+    # 添加与向量模型的关联
+    embedding_model = models.ForeignKey(
+        'embeddings.EmbeddingModel',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="向量模型",
+        help_text="选择用于知识库的向量模型，选择后即可使用知识库功能"
+    )
+    # 知识库相关设置
+    knowledge_similarity_threshold = models.FloatField(
+        default=0.7,
+        verbose_name="知识相似度阈值",
+        help_text="知识匹配的最小相似度阈值(0-1之间)"
+    )
+    max_knowledge_items = models.IntegerField(
+        default=3,
+        verbose_name="最大知识条数",
+        help_text="每次对话最多使用的知识条数"
     )
     system_role = models.TextField(
         verbose_name="系统角色",
@@ -121,6 +141,22 @@ class Application(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.user.username if self.user else '匿名用户'})"
+        
+    def clean(self):
+        """验证模型设置"""
+        from django.core.exceptions import ValidationError
+        
+        # 验证相似度阈值
+        if self.knowledge_similarity_threshold < 0 or self.knowledge_similarity_threshold > 1:
+            raise ValidationError({
+                'knowledge_similarity_threshold': '相似度阈值必须在0到1之间'
+            })
+            
+        # 验证最大知识条数
+        if self.max_knowledge_items < 1:
+            raise ValidationError({
+                'max_knowledge_items': '最大知识条数必须大于0'
+            })
 
 class ChatConversation(models.Model):
     """用户对话会话记录"""

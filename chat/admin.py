@@ -75,26 +75,24 @@ class ModelUsageStatInline(admin.TabularInline):
 # 主管理类
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'model', 'is_public', 'show_reasoning', 'conversation_count', 'created_at')
-    list_filter = (ActiveModelFilter, PublicFilter, 'show_reasoning', 'created_at')
-    search_fields = ('name', 'description', 'system_role')
-    readonly_fields = ('created_at', 'updated_at', 'conversation_count', 'total_tokens')
+    list_display = ('name', 'user', 'model', 'embedding_model', 'is_public', 'is_active')
+    list_filter = ('is_public', 'is_active')
+    search_fields = ('name', 'description', 'user__username')
     fieldsets = (
         ('基本信息', {
-            'fields': ('name', 'description', 'user', 'is_active', 'is_public')
+            'fields': ('name', 'description', 'user', 'is_public', 'is_active')
         }),
         ('模型设置', {
-            'fields': ('model', 'system_role', 'show_reasoning'),
-            'classes': ('collapse',)
+            'fields': ('model', 'embedding_model')
         }),
-        ('统计信息', {
-            'fields': ('conversation_count', 'total_tokens'),
-            'classes': ('collapse',)
+        ('知识库设置', {
+            'fields': ('knowledge_similarity_threshold', 'max_knowledge_items'),
+            'classes': ('collapse',),
+            'description': '这些设置仅在选择了向量模型时生效'
         }),
-        ('时间信息', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
+        ('对话设置', {
+            'fields': ('system_role', 'show_reasoning')
+        })
     )
     inlines = [ChatConversationInline]
     
@@ -114,8 +112,8 @@ class ApplicationAdmin(admin.ModelAdmin):
 
 @admin.register(AIModel)
 class AIModelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'model_type_display', 'api_url_short', 'is_active', 'created_at', 'usage_stats')
-    list_filter = (ActiveModelFilter, 'model_type', 'created_at')
+    list_display = ('name', 'model_type', 'is_active', 'created_at')
+    list_filter = ('model_type', 'is_active')
     search_fields = ('name', 'description')
     readonly_fields = ('created_at', 'updated_at', 'total_usage')
     fieldsets = (
@@ -164,104 +162,24 @@ class AIModelAdmin(admin.ModelAdmin):
 
 @admin.register(ChatConversation)
 class ChatConversationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'model', 'message_count', 'total_tokens', 'updated_at')
-    list_filter = ('user', 'model', 'is_active', 'updated_at')
-    search_fields = ('user__username', 'title', 'conversation_id')
-    readonly_fields = ('conversation_id', 'created_at', 'updated_at', 'cost_per_token')
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('user', 'conversation_id', 'title', 'is_active')
-        }),
-        ('模型设置', {
-            'fields': ('model', 'temperature', 'top_p'),
-            'classes': ('collapse',)
-        }),
-        ('统计信息', {
-            'fields': ('total_tokens', 'total_cost', 'cost_per_token'),
-            'classes': ('collapse',)
-        }),
-        ('时间信息', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-    inlines = [ChatMessageInline]
-    
-    def message_count(self, obj):
-        return obj.messages.count()
-    message_count.short_description = '消息数'
-    
-    def cost_per_token(self, obj):
-        if obj.total_tokens > 0:
-            return f"${(obj.total_cost / obj.total_tokens):.8f}/token"
-        return 'N/A'
-    cost_per_token.short_description = '单token成本'
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
-            message_count=Count('messages')
-        )
+    list_display = ('id', 'user', 'title', 'application', 'model', 'total_tokens', 'total_cost', 'created_at')
+    list_filter = ('application', 'model', 'is_active')
+    search_fields = ('title', 'user__username', 'conversation_id')
+    readonly_fields = ('total_tokens', 'total_cost')
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('conversation', 'role', 'content_preview', 'model_used', 'tokens', 'cost', 'timestamp')
-    list_filter = ('role', 'model_used', 'is_success', 'timestamp')
+    list_display = ('id', 'conversation', 'role', 'content_preview', 'tokens', 'cost', 'timestamp')
+    list_filter = ('role', 'is_success', 'model_used')
     search_fields = ('content', 'conversation__title')
-    readonly_fields = ('timestamp', 'cost_per_token', 'latency_display')
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('conversation', 'role', 'content')
-        }),
-        ('模型交互', {
-            'fields': ('model_used', 'is_success', 'api_response_preview'),
-            'classes': ('collapse',)
-        }),
-        ('调用参数', {
-            'fields': ('temperature', 'top_p', 'max_tokens'),
-            'classes': ('collapse',)
-        }),
-        ('统计信息', {
-            'fields': ('tokens', 'cost', 'cost_per_token', 'latency_display'),
-            'classes': ('collapse',)
-        }),
-    )
+    readonly_fields = ('tokens', 'cost', 'latency')
     
     def content_preview(self, obj):
         return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
-    content_preview.short_description = '内容'
-    
-    def api_response_preview(self, obj):
-        if obj.api_response:
-            return format_html('<pre>{}</pre>', str(obj.api_response)[:200] + '...')
-        return '-'
-    api_response_preview.short_description = 'API响应'
-    
-    def cost_per_token(self, obj):
-        if obj.tokens > 0 and obj.cost:
-            return f"${(obj.cost / obj.tokens):.8f}/token"
-        return 'N/A'
-    cost_per_token.short_description = '单token成本'
-    
-    def latency_display(self, obj):
-        if obj.latency:
-            return f"{obj.latency:.2f}秒"
-        return '-'
-    latency_display.short_description = '响应时间'
+    content_preview.short_description = '内容预览'
 
 @admin.register(ModelUsageStat)
 class ModelUsageStatAdmin(admin.ModelAdmin):
-    list_display = ('model', 'date', 'call_count', 'total_tokens', 'total_cost', 'avg_cost_per_call')
+    list_display = ('model', 'date', 'call_count', 'total_tokens', 'total_cost')
     list_filter = ('model', 'date')
-    readonly_fields = ('avg_cost_per_call', 'avg_tokens_per_call')
-    
-    def avg_cost_per_call(self, obj):
-        if obj.call_count > 0:
-            return f"${(obj.total_cost / obj.call_count):.6f}"
-        return 'N/A'
-    avg_cost_per_call.short_description = '均次调用成本'
-    
-    def avg_tokens_per_call(self, obj):
-        if obj.call_count > 0:
-            return f"{(obj.total_tokens / obj.call_count):.1f} tokens"
-        return 'N/A'
-    avg_tokens_per_call.short_description = '均次调用token数'
+    search_fields = ('model__name',)

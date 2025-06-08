@@ -3,6 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from .models import EmbeddingModel, Knowledge, APICallLog
+from .services import EmbeddingService
 
 @admin.register(EmbeddingModel)
 class EmbeddingModelAdmin(admin.ModelAdmin):
@@ -27,7 +28,7 @@ class KnowledgeAdmin(admin.ModelAdmin):
     list_display = ('id', 'text_preview', 'model', 'similarity_score', 'is_valid', 'created_at')
     list_filter = ('model', 'is_valid', 'created_at')
     search_fields = ('text',)
-    readonly_fields = ('created_at', 'updated_at', 'similarity_score')
+    readonly_fields = ('embedding', 'created_at', 'updated_at', 'similarity_score')
     fieldsets = (
         ('内容信息', {
             'fields': ('text', 'model')
@@ -42,23 +43,28 @@ class KnowledgeAdmin(admin.ModelAdmin):
         return obj.text[:100] + '...' if len(obj.text) > 100 else obj.text
     text_preview.short_description = '知识内容'
 
+    def save_model(self, request, obj, form, change):
+        """保存模型时自动生成向量"""
+        # 检查是否需要生成向量
+        if not change or 'text' in form.changed_data or 'model' in form.changed_data:
+            try:
+                # 创建向量服务
+                service = EmbeddingService(obj.model)
+                # 获取向量
+                embedding_array = service.get_embedding(obj.text)
+                # 设置向量
+                obj.set_embedding_array(embedding_array)
+            except Exception as e:
+                self.message_user(request, f"生成向量失败: {str(e)}", level='error')
+                return
+        
+        super().save_model(request, obj, form, change)
+
 @admin.register(APICallLog)
 class APICallLogAdmin(admin.ModelAdmin):
-    list_display = ('model', 'api_type', 'status_code', 'duration', 'created_at')
-    list_filter = ('model', 'api_type', 'status_code', 'created_at')
-    search_fields = ('request_data', 'response_data')
-    readonly_fields = ('created_at',)
-    fieldsets = (
-        ('调用信息', {
-            'fields': ('model', 'api_type', 'status_code', 'duration')
-        }),
-        ('请求响应', {
-            'fields': ('request_data', 'response_data')
-        }),
-        ('时间信息', {
-            'fields': ('created_at',)
-        }),
-    )
+    list_display = ('id', 'model', 'api_type', 'status_code', 'duration', 'created_at')
+    list_filter = ('model', 'api_type', 'status_code')
+    readonly_fields = ('model', 'api_type', 'request_data', 'response_data', 'status_code', 'duration', 'created_at')
 
     def has_add_permission(self, request):
         """禁止手动添加日志"""
