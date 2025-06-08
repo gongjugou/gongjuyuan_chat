@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework', # 添加rest_framework
-    'rest_framework.authtoken', # 添加rest_framework.authtoken
+    # 'rest_framework.authtoken', # 添加rest_framework.authtoken
     'chat', # 添加chat
     'corsheaders', # 添加corsheaders
     'embeddings', # 添加embeddings
