@@ -1070,7 +1070,7 @@ class MessageStreamView(View):
                             # 获取知识文本的向量表示
                             item_embedding_response = embedding_client.embeddings.create(
                                 model=application.embedding_model.model_name,
-                                input=item.text
+                                input=item.question  # 使用问题作为向量生成的输入
                             )
                             item_embedding = item_embedding_response.data[0].embedding
                             
@@ -1090,7 +1090,7 @@ class MessageStreamView(View):
                             print(f"当前相似度阈值: {application.knowledge_similarity_threshold}")
                             if similarity >= application.knowledge_similarity_threshold:
                                 print(f"知识项 {item.id} 相似度 {similarity:.4f} 超过阈值 {application.knowledge_similarity_threshold}，将被使用")
-                                results.append((item.id, item.text, similarity))
+                                results.append((item.id, item.answer, similarity))  # 使用答案作为上下文
                             else:
                                 print(f"知识项 {item.id} 相似度 {similarity:.4f} 未达到阈值 {application.knowledge_similarity_threshold}，将被忽略")
                         except Exception as e:
