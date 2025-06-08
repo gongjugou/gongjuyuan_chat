@@ -10,6 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+#   <script>
+#       window.ChatWidget = {
+#           config: {
+#               application_id: 1,
+#               protocol: 'http',
+#               host: '127.0.0.1:7000'
+#           }
+#       };
+#       </script>
+#       <script async defer src="http://127.0.0.1:7000/static/js/embed.js"></script>
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -44,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken', # 添加rest_framework.authtoken
     'chat', # 添加chat
     'corsheaders', # 添加corsheaders
+    'embeddings', # 添加embeddings
 ]
 
 
