@@ -233,10 +233,20 @@ class KnowledgeBase:
 用户问题：{query}
 
 请基于上述已知信息回答问题。如果问题与已知信息无关，请直接说明"抱歉，我没有找到相关的信息"。不要编造或推测信息。"""
+
+        # 打印发送给AI的完整信息
+        console.print("\n[yellow]发送给AI的完整信息：[/]")
+        console.print("[dim]" + "="*50 + "[/]")
+        console.print("[dim]系统提示：[/]")
+        console.print("[dim]你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。[/]")
+        console.print("[dim]" + "-"*50 + "[/]")
+        console.print("[dim]用户提示：[/]")
+        console.print(f"[dim]{prompt}[/]")
+        console.print("[dim]" + "="*50 + "[/]")
         
         # 3. 调用对话API
         chat_start = time.time()
-        console.print("[yellow]开始调用对话API...[/]")
+        console.print("\n[yellow]开始调用对话API...[/]")
         response = self.chat_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=[
@@ -251,7 +261,7 @@ class KnowledgeBase:
         total_chunks = 0
         total_content_length = 0
         
-        console.print("[yellow]开始接收响应...[/]")
+        console.print("\n[yellow]开始接收响应...[/]")
         console.print(f"\n[回答] ", end="")
         for chunk in response:
             if not chunk.choices:

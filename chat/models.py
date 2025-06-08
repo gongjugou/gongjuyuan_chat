@@ -103,9 +103,9 @@ class Application(models.Model):
     )
     # 知识库相关设置
     knowledge_similarity_threshold = models.FloatField(
-        default=0.7,
+        default=0.5,
         verbose_name="知识相似度阈值",
-        help_text="知识匹配的最小相似度阈值(0-1之间)"
+        help_text="知识匹配的最小相似度阈值(0-1之间)，建议设置为0.5-0.7之间"
     )
     max_knowledge_items = models.IntegerField(
         default=3,

@@ -53,11 +53,34 @@ class Knowledge(models.Model):
 
     def get_embedding_array(self):
         """将二进制向量转换为numpy数组"""
-        return np.frombuffer(self.embedding, dtype=np.float32)
+        try:
+            if not self.embedding:
+                print(f"知识项 {self.id} 的向量为空")
+                return None
+                
+            array = np.frombuffer(self.embedding, dtype=np.float32)
+            if len(array) == 0:
+                print(f"知识项 {self.id} 的向量长度为0")
+                return None
+                
+            return array
+        except Exception as e:
+            print(f"获取知识项 {self.id} 的向量时出错: {str(e)}")
+            return None
 
     def set_embedding_array(self, array):
         """将numpy数组转换为二进制存储"""
-        self.embedding = array.tobytes()
+        try:
+            if array is None or len(array) == 0:
+                print(f"知识项 {self.id} 的输入向量为空")
+                return
+                
+            if not isinstance(array, np.ndarray):
+                array = np.array(array, dtype=np.float32)
+                
+            self.embedding = array.tobytes()
+        except Exception as e:
+            print(f"设置知识项 {self.id} 的向量时出错: {str(e)}")
 
 class APICallLog(models.Model):
     """API调用日志"""

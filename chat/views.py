@@ -31,7 +31,8 @@ from wsgiref.util import FileWrapper
 import io
 from django.http import Http404
 from django.template import Template, Context
-from .services import KnowledgeService
+import numpy as np
+from embeddings.models import Knowledge  # 添加这行导入
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -593,7 +594,7 @@ class ChatStreamView(View):
                             if first_chunk_time is None:
                                 first_chunk_time = time.time()
                                 print(f"收到第一个响应块: {first_chunk_time - api_start:.3f}秒")
-                            
+                                
                             chunk_count += 1
                             chunk_time = time.time() - chunk_start
                             total_chunk_time += chunk_time
@@ -671,41 +672,136 @@ class ChatMessageView(APIView):
     """处理聊天消息的视图"""
     permission_classes = [AllowAny]
     
-    def get(self, request, conversation_id):
+    async def post(self, request, application_id, conversation_id):
         try:
-            session_id = request.query_params.get('session_id')
-            logger.info(f"获取消息历史 - 对话ID: {conversation_id}, 会话ID: {session_id}")
+            start_time = time.time()
+            print(f"\n{'='*50}")
+            print(f"开始执行时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{'='*50}")
             
-            if not session_id:
-                logger.warning("未提供会话ID")
-                return Response(
-                    {"error": "需要提供会话ID"},
-                    status=status.HTTP_400_BAD_REQUEST
+            # 获取应用实例
+            application = Application.objects.get(id=application_id, is_active=True)
+                        # 添加日志检查向量模型
+            print("\n[bold cyan]应用信息检查:[/]")
+            print(f"[dim]应用ID: {application.id}[/]")
+            print(f"[dim]应用名称: {application.name}[/]")
+            print(f"[dim]向量模型: {application.embedding_model.name if application.embedding_model else '未配置'}[/]")
+            if application.embedding_model:
+                print(f"[dim]向量模型API: {application.embedding_model.api_url}[/]")
+                print(f"[dim]向量模型状态: {'启用' if application.embedding_model.is_active else '禁用'}[/]")
+            
+            # 获取用户消息
+            message = request.data.get('message', '').strip()
+            if not message:
+                return Response({'error': '消息不能为空'}, status=400)
+            
+            # 初始化知识库服务
+            kb_service = KnowledgeBaseService(application)
+            
+            # 构建流式响应
+            async def generate_response():
+                # 如果启用了知识库，先进行语义搜索
+                if kb_service.has_knowledge_base():
+                    print("\n[yellow]开始处理对话请求...[/]")
+                    print("[yellow]开始语义搜索...[/]")
+                    
+                    # 显示正在处理知识库
+                    yield f"data: {json.dumps({'reasoning_content': '开始处理对话请求...\n开始语义搜索...'})}\n\n"
+                    
+                    # 搜索相关知识
+                    search_start = time.time()
+                    knowledge_items = await kb_service.search_similar(message)
+                    print(f"语义搜索耗时: {round(time.time() - search_start, 3)} 秒")
+                    
+                    # 显示找到的知识
+                    if knowledge_items:
+                        print("\n[yellow]找到的相关知识：[/]")
+                        for item in knowledge_items:
+                            print(f"[dim]相似度: {item[2]:.4f} - {item[1]}[/]")
+                        
+                        yield f"data: {json.dumps({'reasoning_content': '找到的相关知识：\n' + '\n'.join([f'相似度: {item[2]:.4f} - {item[1]}' for item in knowledge_items])})}\n\n"
+                        
+                        # 构建带上下文的提示词
+                        prompt = kb_service.build_prompt(message, knowledge_items)
+                        
+                        # 显示发送给AI的完整信息
+                        print("\n[yellow]发送给AI的完整信息：[/]")
+                        print("[dim]" + "="*50 + "[/]")
+                        print("[dim]系统提示：[/]")
+                        print("[dim]你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。[/]")
+                        print("[dim]" + "-"*50 + "[/]")
+                        print("[dim]用户提示：[/]")
+                        print(f"[dim]{prompt}[/]")
+                        print("[dim]" + "="*50 + "[/]")
+                        
+                        yield f"data: {json.dumps({'reasoning_content': '发送给AI的完整信息：\n' + '='*50 + '\n系统提示：\n你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。\n' + '-'*50 + '\n用户提示：\n' + prompt + '\n' + '='*50})}\n\n"
+                    else:
+                        print("[yellow]未找到相关知识，将直接回答问题...[/]")
+                        yield f"data: {json.dumps({'reasoning_content': '未找到相关知识，将直接回答问题...'})}\n\n"
+                        prompt = message
+                else:
+                    prompt = message
+                
+                # 调用对话模型API
+                print("\n[yellow]开始调用对话API...[/]")
+                chat_start = time.time()
+                
+                chat_client = OpenAI(
+                    base_url=application.model.api_url,
+                    api_key=application.model.api_key
                 )
+                
+                response = chat_client.chat.completions.create(
+                    model=application.model.model_name,
+                    messages=[
+                        {"role": "system", "content": "你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。"},
+                        {"role": "user", "content": prompt}
+                    ],
+                    stream=True
+                )
+                
+                # 返回对话结果
+                first_chunk_time = None
+                total_chunks = 0
+                total_content_length = 0
+                
+                print("\n[yellow]开始接收响应...[/]")
+                for chunk in response:
+                    if not chunk.choices:
+                        continue
+                        
+                    if first_chunk_time is None:
+                        first_chunk_time = time.time()
+                        print(f"第一个响应块耗时: {round(first_chunk_time - chat_start, 3)} 秒")
+                    
+                    total_chunks += 1
+                    if chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        total_content_length += len(content)
+                        yield f"data: {json.dumps({'content': content})}\n\n"
+                    if chunk.choices[0].delta.reasoning_content:
+                        content = chunk.choices[0].delta.reasoning_content
+                        total_content_length += len(content)
+                        yield f"data: {json.dumps({'reasoning_content': content})}\n\n"
+                
+                if total_chunks > 0:
+                    print(f"\n[bold cyan]性能统计:[/]")
+                    print(f"[dim]总执行时间: {round(time.time() - start_time, 3)} 秒[/]")
+                    print(f"[dim]API请求总耗时: {round(time.time() - chat_start, 3)} 秒[/]")
+                    print(f"[dim]总响应块数: {total_chunks}[/]")
+                    print(f"[dim]总内容长度: {total_content_length} 字符[/]")
+                    print(f"[dim]平均每块耗时: {round((time.time() - first_chunk_time) / total_chunks, 3)} 秒[/]")
+                    print(f"[dim]平均每字符耗时: {round((time.time() - first_chunk_time) / total_content_length, 3)} 秒[/]")
             
-            conversation = ChatConversation.objects.get(
-                conversation_id=conversation_id,
-                session_id=session_id
+            return StreamingHttpResponse(
+                generate_response(),
+                content_type='text/event-stream'
             )
             
-            messages = conversation.messages.all().order_by('timestamp')
-            logger.info(f"找到 {messages.count()} 条消息")
-            
-            serializer = ChatMessageSerializer(messages, many=True)
-            return Response(serializer.data)
-            
-        except ChatConversation.DoesNotExist:
-            logger.error(f"对话不存在: {conversation_id}")
-            return Response(
-                {"error": "对话不存在"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        except Application.DoesNotExist:
+            return Response({'error': '应用不存在或未激活'}, status=404)
         except Exception as e:
-            logger.error(f"获取消息历史时发生错误: {str(e)}")
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': str(e)}, status=500)
 
 class ApplicationDetailView(APIView):
     """获取应用详情"""
@@ -926,12 +1022,109 @@ class MessageStreamView(View):
             application = get_object_or_404(Application, id=application_id, is_active=True)
             conversation = get_object_or_404(
                 ChatConversation,
-                application=application,
                 conversation_id=conversation_id,
                 session_id=session_id,
-                is_active=True
+                application=application
             )
+            
+            # 添加日志检查向量模型
+            print("\n[bold cyan]应用信息检查:[/]")
+            print(f"[dim]应用ID: {application.id}[/]")
+            print(f"[dim]应用名称: {application.name}[/]")
+            print(f"[dim]向量模型: {application.embedding_model.name if application.embedding_model else '未配置'}[/]")
+            if application.embedding_model:
+                print(f"[dim]向量模型API: {application.embedding_model.api_url}[/]")
+                print(f"[dim]向量模型状态: {'启用' if application.embedding_model.is_active else '禁用'}[/]")
+            
+            # 如果启用了向量模型，先获取向量
+            if application.embedding_model and application.embedding_model.is_active:
+                print("\n[yellow]开始处理对话请求...[/]")
+                print("[yellow]开始获取向量...[/]")
+                
+                try:
+                    # 初始化向量模型客户端
+                    embedding_client = OpenAI(
+                        base_url=application.embedding_model.api_url,
+                        api_key=application.embedding_model.api_key
+                    )
+                    
+                    # 获取查询的向量表示
+                    embedding_response = embedding_client.embeddings.create(
+                        model=application.embedding_model.model_name,
+                        input=user_message
+                    )
+                    
+                    query_embedding = embedding_response.data[0].embedding
+                    print(f"获取到向量，维度: {len(query_embedding)}")
+                    
+                    # 从数据库获取知识
+                    knowledge_items = application.embedding_model.knowledge_set.filter(
+                        is_valid=True
+                    )
+                    print(f"找到 {knowledge_items.count()} 条知识")
+                    
+                    # 计算相似度并排序
+                    results = []
+                    for item in knowledge_items:
+                        try:
+                            # 获取知识文本的向量表示
+                            item_embedding_response = embedding_client.embeddings.create(
+                                model=application.embedding_model.model_name,
+                                input=item.text
+                            )
+                            item_embedding = item_embedding_response.data[0].embedding
+                            
+                            # 计算余弦相似度
+                            dot_product = np.dot(query_embedding, item_embedding)
+                            norm_query = np.linalg.norm(query_embedding)
+                            norm_vec = np.linalg.norm(item_embedding)
+                            
+                            if norm_query == 0 or norm_vec == 0:
+                                print(f"知识项 {item.id} 的向量范数为0")
+                                continue
+                                
+                            similarity = dot_product / (norm_query * norm_vec)
+                            print(f"知识项 {item.id} 相似度: {similarity:.4f}")
+                            
+                            # 添加相似度阈值判断的日志
+                            print(f"当前相似度阈值: {application.knowledge_similarity_threshold}")
+                            if similarity >= application.knowledge_similarity_threshold:
+                                print(f"知识项 {item.id} 相似度 {similarity:.4f} 超过阈值 {application.knowledge_similarity_threshold}，将被使用")
+                                results.append((item.id, item.text, similarity))
+                            else:
+                                print(f"知识项 {item.id} 相似度 {similarity:.4f} 未达到阈值 {application.knowledge_similarity_threshold}，将被忽略")
+                        except Exception as e:
+                            print(f"处理知识项 {item.id} 时出错: {str(e)}")
+                            continue
+                    
+                    # 按相似度排序并获取前N个结果
+                    results.sort(key=lambda x: x[2], reverse=True)
+                    results = results[:application.max_knowledge_items]
+                    
+                    if results:
+                        print("\n[yellow]找到的相关知识：[/]")
+                        for item in results:
+                            print(f"[dim]相似度: {item[2]:.4f} - {item[1]}[/]")
+                        
+                        # 构建带上下文的提示词
+                        context = "\n".join([f"- {item[1]}" for item in results])
+                        prompt = f"""基于以下上下文信息回答问题：
 
+上下文信息：
+{context}
+
+用户问题：{user_message}
+
+请基于上述上下文信息回答问题。如果问题与上下文无关，请明确告知用户。"""
+                    else:
+                        print("[yellow]未找到相关知识，将直接回答问题...[/]")
+                        prompt = user_message
+                except Exception as e:
+                    print(f"处理向量时出错: {str(e)}")
+                    prompt = user_message
+            else:
+                prompt = user_message
+            
             # 保存用户消息
             user_message_obj = ChatMessage.objects.create(
                 conversation=conversation,
@@ -984,7 +1177,7 @@ class MessageStreamView(View):
                     if not messages or messages[-1]['role'] != 'user' or messages[-1]['content'] != user_message:
                         messages.append({
                             "role": "user",
-                            "content": user_message
+                            "content": prompt  # 使用处理后的prompt
                         })
 
                     # 打印完整的消息列表，用于调试

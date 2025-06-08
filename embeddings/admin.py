@@ -29,6 +29,7 @@ class KnowledgeAdmin(admin.ModelAdmin):
     list_filter = ('model', 'is_valid', 'created_at')
     search_fields = ('text',)
     readonly_fields = ('embedding', 'created_at', 'updated_at', 'similarity_score')
+    actions = ['regenerate_embeddings']
     fieldsets = (
         ('内容信息', {
             'fields': ('text', 'model')
@@ -59,6 +60,31 @@ class KnowledgeAdmin(admin.ModelAdmin):
                 return
         
         super().save_model(request, obj, form, change)
+        
+    def regenerate_embeddings(self, request, queryset):
+        """重新生成选中知识的向量"""
+        success_count = 0
+        error_count = 0
+        
+        for obj in queryset:
+            try:
+                # 创建向量服务
+                service = EmbeddingService(obj.model)
+                # 获取向量
+                embedding_array = service.get_embedding(obj.text)
+                # 设置向量
+                obj.set_embedding_array(embedding_array)
+                obj.save()
+                success_count += 1
+            except Exception as e:
+                error_count += 1
+                self.message_user(request, f"知识 {obj.id} 重新生成向量失败: {str(e)}", level='error')
+        
+        if success_count > 0:
+            self.message_user(request, f"成功重新生成 {success_count} 条知识的向量")
+        if error_count > 0:
+            self.message_user(request, f"重新生成向量失败: {error_count} 条", level='error')
+    regenerate_embeddings.short_description = "重新生成向量"
 
 @admin.register(APICallLog)
 class APICallLogAdmin(admin.ModelAdmin):
