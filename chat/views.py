@@ -37,8 +37,13 @@ from embeddings.models import Knowledge  # 添加这行导入
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
+class ApplicationNotPublicError(Exception):
+    """应用未公开异常"""
+    pass
 
-
+class ApplicationNotActiveError(Exception):
+    """应用未激活异常"""
+    pass
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChatStreamView(View):
@@ -64,13 +69,35 @@ class ChatStreamView(View):
             # 验证应用
             app_start = time.time()
             try:
-                application = Application.objects.select_related('model').get(id=application_id, is_active=True)
+                application = Application.objects.select_related('model').get(id=application_id)
+                # 检查应用是否激活
+                if not application.is_active:
+                    return JsonResponse(
+                        {
+                            "error": "应用未激活",
+                            "code": "APPLICATION_NOT_ACTIVE",
+                            "status": 403
+                        },
+                        status=403
+                    )
+                
+                # 检查应用是否公开
+                if not application.is_public:
+                    return JsonResponse(
+                        {
+                            "error": "应用未公开",
+                            "code": "APPLICATION_NOT_PUBLIC",
+                            "status": 403
+                        },
+                        status=403
+                    )
+                
                 print(f"\n[2/7] 查询应用: {time.time() - app_start:.3f}秒")
                 print(f"应用名称: {application.name}")
                 print(f"模型名称: {application.model.name}")
             except Application.DoesNotExist:
                 return JsonResponse(
-                    {"error": "应用不存在或未激活"},
+                    {"error": "应用不存在"},
                     status=404
                 )
             
@@ -425,13 +452,45 @@ class ApplicationDetailView(APIView):
     
     def get(self, request, application_id):
         try:
-            application = get_object_or_404(Application, id=application_id, is_active=True)
+            application = get_object_or_404(Application, id=application_id)
+            
+            # 检查应用是否激活
+            if not application.is_active:
+                raise ApplicationNotActiveError("应用未激活")
+            
+            # 检查应用是否公开
+            if not application.is_public:
+                raise ApplicationNotPublicError("应用未公开")
+            
             serializer = ApplicationSerializer(application)
             return Response(serializer.data)
+            
+        except ApplicationNotActiveError as e:
+            return Response(
+                {
+                    "error": str(e),
+                    "code": "APPLICATION_NOT_ACTIVE",
+                    "status": status.HTTP_403_FORBIDDEN
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except ApplicationNotPublicError as e:
+            return Response(
+                {
+                    "error": str(e),
+                    "code": "APPLICATION_NOT_PUBLIC",
+                    "status": status.HTTP_403_FORBIDDEN
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
         except Exception as e:
             logger.error(f"获取应用详情失败: {str(e)}")
             return Response(
-                {"error": "获取应用详情失败"},
+                {
+                    "error": "获取应用详情失败",
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -441,13 +500,18 @@ class ApplicationListView(APIView):
     
     def get(self, request):
         try:
+            # 只获取公开且激活的应用
             applications = Application.objects.filter(is_active=True, is_public=True)
             serializer = ApplicationSerializer(applications, many=True)
             return Response(serializer.data)
         except Exception as e:
             logger.error(f"获取应用列表失败: {str(e)}")
             return Response(
-                {"error": "获取应用列表失败"},
+                {
+                    "error": "获取应用列表失败",
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -657,7 +721,35 @@ class MessageStreamView(View):
                 )
 
             # 查询应用和对话
-            application = get_object_or_404(Application, id=application_id, is_active=True)
+            try:
+                application = Application.objects.get(id=application_id)
+                # 检查应用是否激活
+                if not application.is_active:
+                    return JsonResponse(
+                        {
+                            "error": "应用未激活",
+                            "code": "APPLICATION_NOT_ACTIVE",
+                            "status": 403
+                        },
+                        status=403
+                    )
+                
+                # 检查应用是否公开
+                if not application.is_public:
+                    return JsonResponse(
+                        {
+                            "error": "应用未公开",
+                            "code": "APPLICATION_NOT_PUBLIC",
+                            "status": 403
+                        },
+                        status=403
+                    )
+            except Application.DoesNotExist:
+                return JsonResponse(
+                    {"error": "应用不存在"},
+                    status=404
+                )
+
             conversation = get_object_or_404(
                 ChatConversation,
                 conversation_id=conversation_id,
@@ -924,9 +1016,22 @@ class DesignView(TemplateView):
         
         # 验证应用是否存在
         try:
-            application = Application.objects.get(id=application_id, is_active=True)
+            application = Application.objects.get(id=application_id)
+            
+            # 检查应用是否激活
+            if not application.is_active:
+                raise ApplicationNotActiveError("应用未激活")
+            
+            # 检查应用是否公开
+            if not application.is_public:
+                raise ApplicationNotPublicError("应用未公开")
+            
         except Application.DoesNotExist:
-            raise Http404("应用不存在或未激活")
+            raise Http404("应用不存在")
+        except ApplicationNotActiveError as e:
+            raise Http404(str(e))
+        except ApplicationNotPublicError as e:
+            raise Http404(str(e))
         
         # 获取API URL
         api_url = self.request.GET.get('api_url')

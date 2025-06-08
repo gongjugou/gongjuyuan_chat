@@ -795,14 +795,14 @@
                     });
                     
                     if (!createResponse.ok) {
-                        throw new Error('创建对话失败');
+                        const errorData = await createResponse.json();
+                        throw new Error(errorData.error || '创建对话失败');
                     }
                     
                     const newConversation = await createResponse.json();
                     conversationId = newConversation.conversation_id;
                     currentConversationId = conversationId;
                     isFirstMessage = true;
-                    // 不要立即 loadConversations() 或清空 chat-content
                 }
                 
                 // 使用stream端点发送消息
@@ -818,7 +818,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('发送消息失败');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '发送消息失败');
                 }
 
                 // 处理流式响应
@@ -874,7 +875,7 @@
                             // 处理错误消息
                             if (jsonData.error) {
                                 console.error('收到错误:', jsonData.error);
-                                messageText.textContent = `错误: ${jsonData.error}`;
+                                messageText.textContent = jsonData.error;
                                 continue;
                             }
                             
@@ -901,7 +902,7 @@
                 }
             } catch (error) {
                 console.error('发送消息失败:', error);
-                showError('发送消息失败');
+                showError(error.message);
             } finally {
                 isLoading = false;
             }
