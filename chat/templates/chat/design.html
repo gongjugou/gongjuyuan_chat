@@ -527,6 +527,15 @@
         let sessionId = null;
         let isLoading = false;
 
+        // 生成会话ID
+        function generateSessionId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
         // 获取URL参数
         function getUrlParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -540,12 +549,26 @@
 
         // 初始化会话
         async function initializeSession() {
-            const storedSessionId = localStorage.getItem('chat_session_id');
-            if (storedSessionId) {
-                console.log('使用已存在的会话ID:', storedSessionId);
-                sessionId = storedSessionId;
-            } else {
+            try {
+                // 尝试从localStorage获取sessionId
+                const storedSessionId = localStorage.getItem('chat_session_id');
+                if (storedSessionId) {
+                    console.log('使用已存在的会话ID:', storedSessionId);
+                    sessionId = storedSessionId;
+                } else {
+                    // 如果localStorage不可用（无痕模式），生成新的sessionId
+                    sessionId = generateSessionId();
+                    console.log('生成新的会话ID:', sessionId);
+                    try {
+                        localStorage.setItem('chat_session_id', sessionId);
+                    } catch (e) {
+                        console.log('localStorage不可用，使用内存中的sessionId');
+                    }
+                }
+            } catch (e) {
+                // 如果出现任何错误，生成新的sessionId
                 sessionId = generateSessionId();
+                console.log('生成新的会话ID（错误恢复）:', sessionId);
             }
         }
 

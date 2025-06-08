@@ -483,35 +483,57 @@ class ConversationListView(APIView):
 
     def post(self, request, application_id):
         """创建新对话"""
+        logger.info(f"开始创建新对话 - 应用ID: {application_id}")
+        logger.info(f"请求数据: {request.data}")
+        
         try:
             session_id = request.data.get('session_id')
             user_message = request.data.get('message')
             
+            logger.info(f"解析参数 - session_id: {session_id}, message: {user_message}")
+            
             if not session_id:
+                logger.error("创建对话失败 - 缺少session_id参数")
                 return Response(
                     {"error": "缺少session_id参数"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            application = get_object_or_404(Application, id=application_id, is_active=True)
+            try:
+                application = get_object_or_404(Application, id=application_id, is_active=True)
+                logger.info(f"成功获取应用信息 - 应用ID: {application.id}, 名称: {application.name}")
+            except Application.DoesNotExist:
+                logger.error(f"创建对话失败 - 应用不存在或未激活 - 应用ID: {application_id}")
+                return Response(
+                    {"error": "应用不存在或未激活"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             
             # 使用用户消息作为标题
             title = user_message[:50] if user_message else '新对话'
+            logger.info(f"准备创建对话 - 标题: {title}")
             
-            conversation = ChatConversation.objects.create(
-                application=application,
-                session_id=session_id,
-                conversation_id=str(uuid.uuid4()),
-                title=title,  # 使用用户消息作为标题
-                model=application.model
-            )
-            
-            # 不再创建第一条消息，所有消息都通过流式接口插入
+            try:
+                conversation = ChatConversation.objects.create(
+                    application=application,
+                    session_id=session_id,
+                    conversation_id=str(uuid.uuid4()),
+                    title=title,  # 使用用户消息作为标题
+                    model=application.model
+                )
+                logger.info(f"成功创建对话 - 对话ID: {conversation.conversation_id}")
+            except Exception as e:
+                logger.error(f"创建对话记录失败: {str(e)}")
+                return Response(
+                    {"error": "创建对话记录失败"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             
             serializer = ChatConversationSerializer(conversation)
+            logger.info(f"对话创建完成 - 返回数据: {serializer.data}")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            logger.error(f"创建对话失败: {str(e)}")
+            logger.error(f"创建对话失败 - 未预期的错误: {str(e)}\n{traceback.format_exc()}")
             return Response(
                 {"error": "创建对话失败"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
