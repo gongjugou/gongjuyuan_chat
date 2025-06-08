@@ -48,13 +48,13 @@ class AIModel(models.Model):
         max_digits=12, 
         decimal_places=10,
         default=0,
-        verbose_name="输入token单价(每千token)"
+        verbose_name="输入token单价(每百万token)"
     )
     output_token_price = models.DecimalField(
         max_digits=12,
         decimal_places=10,
         default=0,
-        verbose_name="输出token单价(每千token)"
+        verbose_name="输出token单价(每百万token)"
     )
 
     class Meta:
@@ -70,8 +70,8 @@ class AIModel(models.Model):
 
     def calculate_cost(self, input_tokens, output_tokens):
         """计算使用成本"""
-        input_cost = (input_tokens / 1000) * self.input_token_price
-        output_cost = (output_tokens / 1000) * self.output_token_price
+        input_cost = (input_tokens / 1000000) * self.input_token_price
+        output_cost = (output_tokens / 1000000) * self.output_token_price
         return round(input_cost + output_cost, 6)
 
 class Application(models.Model):
