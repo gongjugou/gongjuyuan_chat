@@ -27,13 +27,9 @@ class ActiveModelFilter(admin.SimpleListFilter):
 class ChatMessageInline(admin.TabularInline):
     model = ChatMessage
     extra = 0
-    readonly_fields = ('timestamp', 'role', 'content_preview', 'tokens', 'cost')
-    fields = ('timestamp', 'role', 'content_preview', 'model_used', 'tokens', 'cost')
+    readonly_fields = ('timestamp', 'role', 'content', 'tokens', 'cost')
+    fields = ('timestamp', 'role', 'content', 'model_used', 'tokens', 'cost')
     
-    def content_preview(self, obj):
-        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
-    content_preview.short_description = '内容预览'
-
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -148,21 +144,15 @@ class AIModelAdmin(admin.ModelAdmin):
 
 @admin.register(ChatConversation)
 class ChatConversationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'title', 'application', 'model', 'total_tokens', 'total_cost', 'created_at')
+    list_display = ('id', 'user', 'title', 'application', 'model', 'total_tokens', 'total_cost', 'message_count', 'created_at')
     list_filter = ('application', 'model', 'is_active')
     search_fields = ('title', 'user__username', 'conversation_id')
     readonly_fields = ('total_tokens', 'total_cost')
+    inlines = [ChatMessageInline]
 
-@admin.register(ChatMessage)
-class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'conversation', 'role', 'content_preview', 'tokens', 'cost', 'timestamp')
-    list_filter = ('role', 'is_success', 'model_used')
-    search_fields = ('content', 'conversation__title')
-    readonly_fields = ('tokens', 'cost', 'latency')
-    
-    def content_preview(self, obj):
-        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
-    content_preview.short_description = '内容预览'
+    def message_count(self, obj):
+        return obj.messages.count()
+    message_count.short_description = '消息数'
 
 @admin.register(ModelUsageStat)
 class ModelUsageStatAdmin(admin.ModelAdmin):

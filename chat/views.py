@@ -130,7 +130,7 @@ class ChatStreamView(View):
                 conversation=conversation,
                 role='user',
                 content=data['message'],
-                tokens=len(data['message']) // 4,
+                tokens=len(data['message']) // 2,
                 model_used=application.model
             )
             print(f"\n[4/7] 保存用户消息: {time.time() - msg_start:.3f}秒")
@@ -255,7 +255,7 @@ class ChatStreamView(View):
                     # 保存助手消息
                     save_start = time.time()
                     assistant_message.content = full_response
-                    assistant_message.tokens = len(full_response) // 4
+                    assistant_message.tokens = len(full_response) // 2
                     assistant_message.save()
                     print(f"保存助手消息: {time.time() - save_start:.3f}秒")
                     
@@ -840,7 +840,7 @@ class MessageStreamView(View):
                 conversation=conversation,
                 role='user',
                 content=user_message,
-                tokens=len(user_message) // 4,
+                tokens=len(user_message) // 2,
                 model_used=application.model
             )
 
@@ -943,7 +943,7 @@ class MessageStreamView(View):
                         role='assistant',
                         content=full_response,
                         reasoning=full_reasoning,
-                        tokens=len(full_response) // 4,
+                        tokens=len(full_response) // 2,
                         model_used=application.model
                     )
 
