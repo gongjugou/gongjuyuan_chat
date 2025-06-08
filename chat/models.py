@@ -90,7 +90,8 @@ class Application(models.Model):
         AIModel,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name="使用的模型"
+        verbose_name="使用的模型",
+        limit_choices_to={'is_active': True}
     )
     # 添加与向量模型的关联
     embedding_model = models.ForeignKey(
