@@ -3,7 +3,6 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from .models import EmbeddingModel, Knowledge, APICallLog
-from .services import EmbeddingService
 
 @admin.register(EmbeddingModel)
 class EmbeddingModelAdmin(admin.ModelAdmin):
@@ -49,10 +48,8 @@ class KnowledgeAdmin(admin.ModelAdmin):
         # 检查是否需要生成向量
         if not change or 'text' in form.changed_data or 'model' in form.changed_data:
             try:
-                # 创建向量服务
-                service = EmbeddingService(obj.model)
                 # 获取向量
-                embedding_array = service.get_embedding(obj.text)
+                embedding_array = obj.model.get_embedding(obj.text)
                 # 设置向量
                 obj.set_embedding_array(embedding_array)
             except Exception as e:
@@ -68,10 +65,8 @@ class KnowledgeAdmin(admin.ModelAdmin):
         
         for obj in queryset:
             try:
-                # 创建向量服务
-                service = EmbeddingService(obj.model)
                 # 获取向量
-                embedding_array = service.get_embedding(obj.text)
+                embedding_array = obj.model.get_embedding(obj.text)
                 # 设置向量
                 obj.set_embedding_array(embedding_array)
                 obj.save()
