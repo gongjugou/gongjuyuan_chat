@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -454,7 +455,7 @@
     <div class="chat-widget">
         <!-- 机器人头像 -->
         <div class="robot-avatar">
-            <img src="https://maxkb.gongjuyuan.com/ui/MaxKB.gif" alt="智能客服">
+            <img src="{% static 'images/logo.svg' %}" alt="智能客服">
         </div>
 
         <!-- 聊天窗口 -->
@@ -497,7 +498,7 @@
             <div class="chat-content">
                 <div class="message-item">
                     <div class="message-avatar">
-                        <img src="https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg" alt="MaxKB">
+                        <img src="{% static 'images/logo.svg' %}" alt="MaxKB">
                     </div>
                     <div class="message-content">
                         <div class="message-text">
@@ -642,7 +643,7 @@
                 chatContent.innerHTML = data.map(msg => `
                     <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
                         <div class="message-avatar">
-                            <img src="${msg.role === 'user' ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=user' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${msg.role === 'user' ? '用户' : 'MaxKB'}">
+                            <img src="{% static 'images/logo.svg' %}"}">
                         </div>
                         <div class="message-content">
                             ${msg.role === 'assistant' && msg.reasoning ? `
@@ -736,7 +737,7 @@
             
             let messageHtml = `
                 <div class="message-avatar">
-                    <img src="${role === 'user' ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=user' : 'https://maxkb.gongjuyuan.com/ui/assets/logo-a07091c7.svg'}" alt="${role === 'user' ? '用户' : 'MaxKB'}">
+                    <img src="{% static 'images/logo.svg' %}">
                 </div>
                 <div class="message-content">
             `;

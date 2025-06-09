@@ -340,7 +340,8 @@ class ChatMessageView(APIView):
                     print("[yellow]开始语义搜索...[/]")
                     
                     # 显示正在处理知识库
-                    yield f"data: {json.dumps({'reasoning_content': '开始处理对话请求...\n开始语义搜索...'})}\n\n"
+                    yield f"data: {json.dumps({'reasoning_content': '开始处理对话请求...'})}\n\n"
+                    yield f"data: {json.dumps({'reasoning_content': '开始语义搜索...'})}\n\n"
                     
                     # 搜索相关知识
                     search_start = time.time()
@@ -353,7 +354,9 @@ class ChatMessageView(APIView):
                         for item in knowledge_items:
                             print(f"[dim]相似度: {item[2]:.4f} - {item[1]}[/]")
                         
-                        yield f"data: {json.dumps({'reasoning_content': '找到的相关知识：\n' + '\n'.join([f'相似度: {item[2]:.4f} - {item[1]}' for item in knowledge_items])})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '找到的相关知识：'})}\n\n"
+                        for item in knowledge_items:
+                            yield f"data: {json.dumps({'reasoning_content': f'相似度: {item[2]:.4f} - {item[1]}'})}\n\n"
                         
                         # 构建带上下文的提示词
                         prompt = kb_service.build_prompt(message, knowledge_items)
@@ -368,7 +371,14 @@ class ChatMessageView(APIView):
                         print(f"[dim]{prompt}[/]")
                         print("[dim]" + "="*50 + "[/]")
                         
-                        yield f"data: {json.dumps({'reasoning_content': '发送给AI的完整信息：\n' + '='*50 + '\n系统提示：\n你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。\n' + '-'*50 + '\n用户提示：\n' + prompt + '\n' + '='*50})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '发送给AI的完整信息：'})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '='*50})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '系统提示：'})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '你是一个智能助手，需要严格基于提供的上下文信息回答问题。如果问题与上下文无关，请明确告知用户。'})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '-'*50})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '用户提示：'})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': prompt})}\n\n"
+                        yield f"data: {json.dumps({'reasoning_content': '='*50})}\n\n"
                     else:
                         print("[yellow]未找到相关知识，将直接回答问题...[/]")
                         yield f"data: {json.dumps({'reasoning_content': '未找到相关知识，将直接回答问题...'})}\n\n"
