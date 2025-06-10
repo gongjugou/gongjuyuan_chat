@@ -569,7 +569,11 @@
         async function getApplicationInfo() {
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';  // 直接使用Django模板变量
+                
+                if (!applicationId) {
+                    throw new Error('缺少应用ID参数');
+                }
                 
                 const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/`);
                 if (!response.ok) {
@@ -584,6 +588,7 @@
                 }
             } catch (error) {
                 console.error('获取应用信息失败:', error);
+                showError('获取应用信息失败: ' + error.message);
             }
         }
 
@@ -640,9 +645,8 @@
             }
 
             try {
-                // 获取API URL和application_id
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';
                 
                 console.log('加载对话列表，会话ID:', sessionId);
                 console.log('API URL:', apiUrl);
@@ -685,7 +689,7 @@
 
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';
                 
                 console.log('加载对话历史，会话ID:', sessionId);
                 const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${conversationId}/messages/?session_id=${sessionId}`);
@@ -735,18 +739,18 @@
         async function createNewConversation() {
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';
                 const userMessage = document.querySelector('.chat-input').value.trim();
                 
                 console.log('创建新对话，会话ID:', sessionId);
                 const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
-                    method: 'POST',
+                    method: 'POST',  // 确保使用POST方法
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         session_id: sessionId,
-                        message: userMessage  // 传递用户消息
+                        message: userMessage
                     })
                 });
                 
@@ -765,7 +769,7 @@
                 await loadConversations();
             } catch (error) {
                 console.error('创建对话失败:', error);
-                showError('创建对话失败');
+                showError('创建对话失败: ' + error.message);
             }
         }
 
@@ -773,7 +777,7 @@
         async function updateConversationTitle(title) {
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';
                 
                 const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${currentConversationId}/`, {
                     method: 'PATCH',
@@ -847,7 +851,11 @@
             
             try {
                 const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
-                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const applicationId = '{{ application.id }}';  // 直接使用Django模板变量
+                
+                if (!applicationId) {
+                    throw new Error('缺少应用ID参数');
+                }
                 
                 // 添加用户消息到界面
                 appendMessage('user', message);

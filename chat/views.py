@@ -1046,12 +1046,6 @@ def ui_view(request, application_id):
     # 2. 验证应用状态
     if not application.is_active:
         raise Http404(ApplicationNotActiveError("应用未激活"))
-    
-
-    # # 4. 获取API URL
-    # api_url = request.GET.get('api_url')
-    # if not api_url:
-    #     api_url = getattr(settings, 'API_URL', None) or request.build_absolute_uri('/').rstrip('/')
 
     # 3. 渲染模板
     return render(request, 'chat/ui.html', {
