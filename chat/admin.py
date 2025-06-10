@@ -57,12 +57,12 @@ class ModelUsageStatInline(admin.TabularInline):
 # 主管理类
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'user', 'model', 'embedding_model', 'is_active')
+    list_display = ('id', 'name', 'user', 'model', 'embedding_model', 'is_active', 'display_icon')
     list_filter = ('is_active',)
     search_fields = ('name', 'description', 'user__username')
     fieldsets = (
         ('基本信息', {
-            'fields': ('name', 'description', 'user', 'is_active')
+            'fields': ('name', 'description', 'user', 'is_active', 'icon_svg', 'avatar')
         }),
         ('模型设置', {
             'fields': ('model', 'embedding_model')
@@ -77,6 +77,14 @@ class ApplicationAdmin(admin.ModelAdmin):
         })
     )
     inlines = [ChatConversationInline]
+    
+    def display_icon(self, obj):
+        if obj.icon_svg:
+            return format_html('<div style="width: 24px; height: 24px;">{}</div>', obj.icon_svg)
+        elif obj.avatar:
+            return format_html('<img src="{}" style="width: 24px; height: 24px; object-fit: cover;" />', obj.avatar.url)
+        return '-'
+    display_icon.short_description = '图标'
     
     def conversation_count(self, obj):
         return obj.conversations.count()

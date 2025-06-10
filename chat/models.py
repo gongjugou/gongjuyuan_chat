@@ -78,6 +78,18 @@ class Application(models.Model):
     """用户创建的应用"""
     name = models.CharField(max_length=100, verbose_name="应用名称")
     description = models.TextField(verbose_name="应用描述", blank=True)
+    icon_svg = models.TextField(
+        verbose_name="SVG图标",
+        blank=True,
+        help_text="应用的SVG图标代码，建议使用简单的单色图标"
+    )
+    avatar = models.ImageField(
+        upload_to='app_avatars/',
+        verbose_name="应用头像",
+        blank=True,
+        null=True,
+        help_text="应用的头像图片，建议尺寸为200x200像素"
+    )
     user = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
