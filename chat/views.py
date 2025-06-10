@@ -1048,14 +1048,12 @@ def ui_view(request, application_id):
         raise Http404(ApplicationNotActiveError("应用未激活"))
     
 
-    # 4. 获取API URL
-    api_url = request.GET.get('api_url')
-    if not api_url:
-        api_url = getattr(settings, 'API_URL', None) or request.build_absolute_uri('/').rstrip('/')
+    # # 4. 获取API URL
+    # api_url = request.GET.get('api_url')
+    # if not api_url:
+    #     api_url = getattr(settings, 'API_URL', None) or request.build_absolute_uri('/').rstrip('/')
 
-    # 5. 渲染模板
+    # 3. 渲染模板
     return render(request, 'chat/ui.html', {
-        'application_id': application_id,
-        'api_url': api_url,
-        'application': application,  # 可选：把整个应用对象传给模板
+        'application': application  # 直接传递整个应用对象
     })

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能客服</title>
+    <title>{{ application.name }}</title>
     <!-- 移除 Element Plus 的 CSS -->
     <style>
         /* 添加图标字体 */
@@ -482,14 +482,18 @@
     <div class="chat-widget">
         <!-- 机器人头像 -->
         <div class="robot-avatar">
-            <img src="{% static 'images/logo.svg' %}" alt="智能客服">
+            {% if application.icon_svg %}
+                {{ application.icon_svg|safe }}
+            {% else %}
+                {% static 'images/logo.svg' %}
+            {% endif %}
         </div>
 
         <!-- 聊天窗口 -->
         <div class="chat-container" style="display: none;">
             <div class="chat-header">
                 <div class="chat-header-left">
-                    <span class="chat-header-title">智能客服</span>
+                    <span class="chat-header-title">{{ application.name }}</span>
                 </div>
                 <div class="chat-header-actions">
                     <div class="chat-header-btn" id="historyBtn" title="历史记录">
@@ -525,7 +529,13 @@
             <div class="chat-content">
                 <div class="message-item">
                     <div class="message-avatar">
-                        <img src="{% static 'images/logo.svg' %}" alt="MaxKB">
+                        {% if application.avatar %}
+                            <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                        {% else %}
+                            <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
+                        {% endif %}
+
+                       <!-- 这里是第一次用户点开的默认头像 -->
                     </div>
                     <div class="message-content">
                         <div class="message-text">
@@ -692,7 +702,15 @@
                 chatContent.innerHTML = data.map(msg => `
                     <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
                         <div class="message-avatar">
-                            <img src="{% static 'images/logo.svg' %}"}">
+
+                             {% if application.avatar %}
+                            <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                        {% else %}
+                            <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
+                        {% endif %}
+
+                       <!-- 这里是第二次?看来没有反应到前端 -->
+                       
                         </div>
                         <div class="message-content">
                             ${msg.role === 'assistant' && msg.reasoning ? `
@@ -786,7 +804,15 @@
             
             let messageHtml = `
                 <div class="message-avatar">
-                    <img src="{% static 'images/logo.svg' %}">
+
+                     {% if application.avatar %}
+                            <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                        {% else %}
+                            <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
+                        {% endif %}
+
+                       <!-- 这里是系统和我的头像？还得再看看 -->
+                    
                 </div>
                 <div class="message-content">
             `;
