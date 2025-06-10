@@ -1031,3 +1031,31 @@ class DesignView(TemplateView):
             'api_url': api_url
         })
         return context
+
+# views.py
+from django.shortcuts import render, get_object_or_404
+from django.http import Http404
+from django.conf import settings
+from .models import Application
+
+def ui_view(request, application_id):
+    """设计页面视图（函数视图）"""
+    # 1. 获取应用对象，不存在则直接404
+    application = get_object_or_404(Application, id=application_id)
+    print(application)
+    # 2. 验证应用状态
+    if not application.is_active:
+        raise Http404(ApplicationNotActiveError("应用未激活"))
+    
+
+    # 4. 获取API URL
+    api_url = request.GET.get('api_url')
+    if not api_url:
+        api_url = getattr(settings, 'API_URL', None) or request.build_absolute_uri('/').rstrip('/')
+
+    # 5. 渲染模板
+    return render(request, 'chat/ui.html', {
+        'application_id': application_id,
+        'api_url': api_url,
+        'application': application,  # 可选：把整个应用对象传给模板
+    })

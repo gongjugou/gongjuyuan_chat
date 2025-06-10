@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+from . import views
 app_name = 'chat'
 
 urlpatterns = [
@@ -11,8 +11,8 @@ urlpatterns = [
     path('design/<int:application_id>/', 
          views.DesignView.as_view(), 
          name='design_page'),
-    
-  
+     path('ui/<int:application_id>/', views.ui_view, name='ui_view'),
+     
     # 应用相关
     path('applications/<int:application_id>/', 
          views.ApplicationDetailView.as_view(), 

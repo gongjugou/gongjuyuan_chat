@@ -1,0 +1,1099 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服</title>
+    <!-- 移除 Element Plus 的 CSS -->
+    <style>
+        /* 添加图标字体 */
+        @import url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css');
+        
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --bg-color: #ffffff;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+            --hover-color: #f3f4f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        /* 重置样式，避免被外部样式影响 */
+        .chat-widget * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        /* 聊天窗口容器 */
+        .chat-widget {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 999999;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            width: 380px;
+            height: 600px;
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-container.expanded {
+            width: 50vw;
+            height: 100vh;
+            right: 0;
+            bottom: 0;
+            border-radius: 0;
+        }
+
+        /* 聊天窗口头部 */
+        .chat-header {
+            padding: 16px 20px;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100000;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-light);
+            background: transparent;
+            position: relative;
+            z-index: 100000;
+        }
+
+        .chat-header-btn:hover {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .chat-header-btn.active {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .chat-header-btn i {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        /* 聊天内容区域 */
+        .chat-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .message-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .message-item.user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-text {
+            padding: 12px 16px;
+            background: var(--hover-color);
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-color);
+            word-break: break-word;
+            display: inline-block;
+            max-width: fit-content;
+        }
+
+        .message-text.user {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px 12px 0 12px;
+            align-self: flex-end;
+        }
+
+        .message-text.assistant {
+            background: var(--hover-color);
+            border-radius: 12px 12px 12px 0;
+            align-self: flex-start;
+        }
+
+        /* 聊天输入区域 */
+        .chat-input-area {
+            padding: 16px 20px;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            background: var(--hover-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .new-chat-btn i {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            height: 44px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .send-btn {
+            padding: 0 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 机器人头像 */
+        .robot-avatar {
+            width: 80px;
+            height: 80px;
+            background: transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            overflow: hidden;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .robot-avatar:hover {
+            transform: translateY(-5px) scale(1.05);
+            animation: none;
+        }
+
+        .robot-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 自定义滚动条 */
+        .chat-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-content::-webkit-scrollbar-track {
+            background: var(--hover-color);
+        }
+
+        .chat-content::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 3px;
+        }
+
+        .chat-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .chat-widget {
+                right: 0;
+                bottom: 0;
+            }
+
+            .chat-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+
+            .chat-container.expanded {
+                width: 100%;
+            }
+        }
+
+        /* 历史记录列表样式 */
+        .history-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-height: 400px;
+            background: #ffffff;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .history-list.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .history-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+            background: #f3f4f6;
+        }
+
+        .history-items {
+            max-height: 350px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+
+        .history-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        .history-item:hover {
+            background: #f3f4f6;
+        }
+
+        .history-item-title {
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .history-item-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* 确保历史记录按钮可以正常点击 */
+        .chat-header-btn {
+            position: relative;
+            z-index: 1001;
+            cursor: pointer;
+        }
+
+        /* 确保历史记录列表在聊天容器内正确定位 */
+        .chat-header {
+            position: relative;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .chat-header-actions {
+            position: relative;
+        }
+
+        /* 修改思考过程样式 */
+        .thinking-process {
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            background: #f0f7ff;
+            border-left: 3px solid #4f46e5;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #4b5563;
+            white-space: pre-wrap;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .thinking-process::before {
+            content: "思考过程";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            font-size: 12px;
+            color: #4f46e5;
+            font-weight: 500;
+            background: #f0f7ff;
+            padding: 0 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-widget">
+        <!-- 机器人头像 -->
+        <div class="robot-avatar">
+            <img src="{% static 'images/logo.svg' %}" alt="智能客服">
+        </div>
+
+        <!-- 聊天窗口 -->
+        <div class="chat-container" style="display: none;">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <span class="chat-header-title">智能客服</span>
+                </div>
+                <div class="chat-header-actions">
+                    <div class="chat-header-btn" id="historyBtn" title="历史记录">
+                        <i class="ri-history-line"></i>
+                    </div>
+                    <div class="chat-header-btn" title="放大">
+                        <i class="ri-fullscreen-line"></i>
+                    </div>
+                    <div class="chat-header-btn" title="关闭">
+                        <i class="ri-close-line"></i>
+                    </div>
+                </div>
+                <!-- 历史记录列表 -->
+                <div class="history-list" id="historyList">
+                    <div class="history-header">历史记录</div>
+                    <div class="history-items">
+                        <div class="history-item">
+                            <div class="history-item-title">如何修改账户密码？</div>
+                            <div class="history-item-time">2024-03-20 15:30</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-item-title">产品退换货政策咨询</div>
+                            <div class="history-item-time">2024-03-20 14:20</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-item-title">订单状态查询</div>
+                            <div class="history-item-time">2024-03-20 11:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-content">
+                <div class="message-item">
+                    <div class="message-avatar">
+                        <img src="{% static 'images/logo.svg' %}" alt="MaxKB">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            您好！我是您的智能客服助手，很高兴为您服务。请问有什么可以帮您？
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="new-chat-btn">
+                    <i class="ri-add-line"></i>
+                    新建对话
+                </button>
+                <div class="input-container">
+                    <textarea class="chat-input" placeholder="请输入您的问题..."></textarea>
+                    <button class="send-btn">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态变量
+        let currentConversationId = null;
+        let isExpanded = false;
+        let sessionId = null;
+        let isLoading = false;
+
+        // 获取应用信息
+        async function getApplicationInfo() {
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/`);
+                if (!response.ok) {
+                    throw new Error('获取应用信息失败');
+                }
+                
+                const data = await response.json();
+                // 更新标题
+                const titleElement = document.querySelector('.chat-header-title');
+                if (titleElement) {
+                    titleElement.textContent = data.name;
+                }
+            } catch (error) {
+                console.error('获取应用信息失败:', error);
+            }
+        }
+
+        // 生成会话ID
+        function generateSessionId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // 获取URL参数
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 获取当前域名
+        function getBaseUrl() {
+            return window.location.origin;
+        }
+
+        // 初始化会话
+        async function initializeSession() {
+            try {
+                // 尝试从localStorage获取sessionId
+                const storedSessionId = localStorage.getItem('chat_session_id');
+                if (storedSessionId) {
+                    console.log('使用已存在的会话ID:', storedSessionId);
+                    sessionId = storedSessionId;
+                } else {
+                    // 如果localStorage不可用（无痕模式），生成新的sessionId
+                    sessionId = generateSessionId();
+                    console.log('生成新的会话ID:', sessionId);
+                    try {
+                        localStorage.setItem('chat_session_id', sessionId);
+                    } catch (e) {
+                        console.log('localStorage不可用，使用内存中的sessionId');
+                    }
+                }
+            } catch (e) {
+                // 如果出现任何错误，生成新的sessionId
+                sessionId = generateSessionId();
+                console.log('生成新的会话ID（错误恢复）:', sessionId);
+            }
+        }
+
+        // 加载对话列表
+        async function loadConversations() {
+            if (!sessionId) {
+                console.error('会话ID未初始化');
+                return;
+            }
+
+            try {
+                // 获取API URL和application_id
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                console.log('加载对话列表，会话ID:', sessionId);
+                console.log('API URL:', apiUrl);
+                console.log('Application ID:', applicationId);
+                
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/?session_id=${sessionId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('获取到对话列表:', data);
+                
+                // 更新历史记录列表
+                const historyList = document.querySelector('#historyList');
+                historyList.innerHTML = data.map(conv => `
+                    <div class="history-item" data-id="${conv.conversation_id}">
+                        <div class="history-item-title">${conv.title || '新对话'}</div>
+                        <div class="history-item-time">${formatTime(conv.created_at)}</div>
+                    </div>
+                `).join('');
+                
+                // 如果有对话，加载第一个对话的历史
+                if (data.length > 0) {
+                    await loadConversation(data[0].conversation_id);
+                }
+            } catch (error) {
+                console.error('加载对话列表失败:', error);
+                showError('加载对话列表失败');
+            }
+        }
+
+        // 加载对话历史
+        async function loadConversation(conversationId) {
+            if (!sessionId) {
+                console.error('会话ID未初始化');
+                return;
+            }
+
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                console.log('加载对话历史，会话ID:', sessionId);
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${conversationId}/messages/?session_id=${sessionId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('获取到消息历史:', data);
+                
+                // 更新聊天内容
+                const chatContent = document.querySelector('.chat-content');
+                chatContent.innerHTML = data.map(msg => `
+                    <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
+                        <div class="message-avatar">
+                            <img src="{% static 'images/logo.svg' %}"}">
+                        </div>
+                        <div class="message-content">
+                            ${msg.role === 'assistant' && msg.reasoning ? `
+                                <div class="thinking-process">${msg.reasoning}</div>
+                            ` : ''}
+                            <div class="message-text ${msg.role === 'user' ? 'user' : 'assistant'}">
+                                ${msg.content}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                currentConversationId = conversationId;
+                scrollToBottom();
+            } catch (error) {
+                console.error('加载对话历史失败:', error);
+                showError('加载对话失败');
+            }
+        }
+
+        // 创建新对话
+        async function createNewConversation() {
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                const userMessage = document.querySelector('.chat-input').value.trim();
+                
+                console.log('创建新对话，会话ID:', sessionId);
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: userMessage  // 传递用户消息
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const newConversation = await response.json();
+                console.log('创建新对话成功:', newConversation);
+                
+                // 清空聊天内容
+                document.querySelector('.chat-content').innerHTML = '';
+                currentConversationId = newConversation.conversation_id;
+                
+                // 重新加载对话列表
+                await loadConversations();
+            } catch (error) {
+                console.error('创建对话失败:', error);
+                showError('创建对话失败');
+            }
+        }
+
+        // 更新对话标题
+        async function updateConversationTitle(title) {
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${currentConversationId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // 重新加载对话列表以更新标题
+                await loadConversations();
+            } catch (error) {
+                console.error('更新对话标题失败:', error);
+            }
+        }
+
+        // 添加消息到聊天界面
+        function appendMessage(role, content, reasoning = '') {
+            const chatContent = document.querySelector('.chat-content');
+            const messageItem = document.createElement('div');
+            messageItem.className = `message-item ${role === 'user' ? 'user-message' : ''}`;
+            
+            let messageHtml = `
+                <div class="message-avatar">
+                    <img src="{% static 'images/logo.svg' %}">
+                </div>
+                <div class="message-content">
+            `;
+
+            // 始终为助手消息添加思考过程区域
+            if (role === 'assistant') {
+                messageHtml += `
+                    <div class="thinking-process" style="display:${reasoning ? 'block' : 'none'}">${reasoning}</div>
+                `;
+            }
+
+            messageHtml += `
+                    <div class="message-text ${role === 'user' ? 'user' : 'assistant'}">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            
+            messageItem.innerHTML = messageHtml;
+            chatContent.appendChild(messageItem);
+            scrollToBottom();
+            return messageItem;
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const chatInput = document.querySelector('.chat-input');
+            const message = chatInput.value.trim();
+            if (!message || isLoading) return;
+
+            isLoading = true;
+            
+            try {
+                const apiUrl = getUrlParam('api_url') || '{{ api_url }}' || getBaseUrl();
+                const applicationId = getUrlParam('application_id') || '{{ application_id }}';
+                
+                // 添加用户消息到界面
+                appendMessage('user', message);
+                chatInput.value = '';
+                // 重置输入框高度
+                chatInput.style.height = '44px';
+                
+                let conversationId = currentConversationId;
+                let isFirstMessage = false;
+                // 如果没有当前对话，先创建新对话
+                if (!conversationId) {
+                    const createResponse = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId,
+                            message: message
+                        })
+                    });
+                    
+                    if (!createResponse.ok) {
+                        const errorData = await createResponse.json();
+                        throw new Error(errorData.error || '创建对话失败');
+                    }
+                    
+                    const newConversation = await createResponse.json();
+                    conversationId = newConversation.conversation_id;
+                    currentConversationId = conversationId;
+                    isFirstMessage = true;
+                }
+                
+                // 使用stream端点发送消息
+                const response = await fetch(`${apiUrl}/api/chat/applications/${applicationId}/conversations/${conversationId}/messages/stream/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '发送消息失败');
+                }
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                
+                // 添加助手消息占位
+                const messageItem = appendMessage('assistant', '', '');
+                const messageText = messageItem.querySelector('.message-text');
+                const thinkingProcess = messageItem.querySelector('.thinking-process');
+                let currentReasoning = '';
+                let currentContent = '';
+                while (true) {
+                    const {value, done} = await reader.read();
+                    if (done) {
+                        console.log('流式响应结束');
+                        // 新建对话后发送第一条消息，流式结束后刷新历史
+                        if (isFirstMessage) {
+                            await loadConversation(conversationId);
+                        }
+                        break;
+                    }
+                    
+                    const chunk = decoder.decode(value, {stream: true});
+                    console.log('收到数据块:', chunk);
+                    
+                    buffer += chunk;
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        
+                        const data = line.slice(6).trim();
+                        if (!data) continue;
+                        
+                        // 处理[DONE]消息
+                        if (data === '[DONE]') {
+                            console.log('收到完成标记');
+                            // 新建对话后发送第一条消息，流式结束后刷新历史
+                            if (isFirstMessage) {
+                                await loadConversation(conversationId);
+                            }
+                            return;
+                        }
+                        
+                        // 处理JSON消息
+                        try {
+                            const jsonData = JSON.parse(data);
+                            console.log('解析的JSON数据:', jsonData);
+                            
+                            // 处理错误消息
+                            if (jsonData.error) {
+                                console.error('收到错误:', jsonData.error);
+                                messageText.textContent = jsonData.error;
+                                continue;
+                            }
+                            
+                            // 处理reasoning_content
+                            if (jsonData.reasoning_content) {
+                                currentReasoning += jsonData.reasoning_content;
+                                if (thinkingProcess) {
+                                    thinkingProcess.style.display = 'block';
+                                    thinkingProcess.innerHTML = currentReasoning.replace(/\n+/g, '<br>');
+                                    scrollToBottom();
+                                }
+                            }
+                            
+                            // 处理content
+                            if (jsonData.content) {
+                                currentContent += jsonData.content;
+                                messageText.innerHTML = currentContent.replace(/\n+/g, '<br>');
+                                scrollToBottom();
+                            }
+                        } catch (e) {
+                            console.error('解析响应数据失败:', e, '原始数据:', data);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('发送消息失败:', error);
+                showError(error.message);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            appendMessage('assistant', `错误: ${message}`);
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            const chatContent = document.querySelector('.chat-content');
+            chatContent.scrollTo({
+                top: chatContent.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // 格式化时间
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleString('zh-CN', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 绑定事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const robotAvatar = document.querySelector('.robot-avatar');
+            const chatContainer = document.querySelector('.chat-container');
+            const expandBtn = document.querySelector('.chat-header-btn[title="放大"]');
+            const closeBtn = document.querySelector('.chat-header-btn[title="关闭"]');
+            const chatInput = document.querySelector('.chat-input');
+            const sendBtn = document.querySelector('.send-btn');
+            const newChatBtn = document.querySelector('.new-chat-btn');
+            const historyBtn = document.querySelector('#historyBtn');
+            const historyList = document.querySelector('#historyList');
+
+            // 机器人头像点击事件
+            robotAvatar.onclick = function() {
+                chatContainer.style.display = 'flex';
+                robotAvatar.style.display = 'none';
+                initializeSession();
+                loadConversations();
+                getApplicationInfo(); // 获取应用信息
+            };
+
+            // 展开/收起事件
+            expandBtn.onclick = function() {
+                isExpanded = !isExpanded;
+                chatContainer.classList.toggle('expanded');
+                this.querySelector('i').className = isExpanded ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line';
+                this.title = isExpanded ? '收起' : '放大';
+            };
+
+            // 关闭按钮事件
+            closeBtn.onclick = function() {
+                chatContainer.style.display = 'none';
+                robotAvatar.style.display = 'flex';
+                if (isExpanded) {
+                    isExpanded = false;
+                    chatContainer.classList.remove('expanded');
+                    expandBtn.querySelector('i').className = 'ri-fullscreen-line';
+                    expandBtn.title = '放大';
+                }
+            };
+
+            // 发送消息事件
+            sendBtn.onclick = function(e) {
+                e.preventDefault();
+                if (!isLoading) {
+                    sendMessage();
+                }
+            };
+            
+            chatInput.onkeypress = function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!isLoading) {
+                        sendMessage();
+                    }
+                }
+            };
+
+            // 新建对话事件
+            newChatBtn.onclick = function() {
+                // 清空聊天内容
+                document.querySelector('.chat-content').innerHTML = '';
+                // 清空当前对话ID
+                currentConversationId = null;
+                // 清空输入框
+                document.querySelector('.chat-input').value = '';
+                // 重置输入框高度
+                document.querySelector('.chat-input').style.height = '44px';
+                // 聚焦到输入框
+                document.querySelector('.chat-input').focus();
+            };
+
+            // 历史记录按钮事件
+            historyBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                historyList.classList.toggle('show');
+            };
+
+            // 点击历史记录项
+            historyList.addEventListener('click', function(e) {
+                const historyItem = e.target.closest('.history-item');
+                if (historyItem) {
+                    const conversationId = historyItem.dataset.id;
+                    loadConversation(conversationId);
+                    historyList.classList.remove('show');
+                }
+            });
+
+            // 点击其他地方关闭历史记录
+            document.addEventListener('click', function(e) {
+                if (!historyList.contains(e.target) && !historyBtn.contains(e.target)) {
+                    historyList.classList.remove('show');
+                }
+            });
+
+            // 阻止历史记录列表的点击事件冒泡
+            historyList.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // 输入框自动调整高度
+            chatInput.oninput = function() {
+                this.style.height = '44px';  // 先重置为默认高度
+                const scrollHeight = this.scrollHeight;
+                if (scrollHeight > 44) {  // 只有当内容真正超过一行时才调整高度
+                    this.style.height = scrollHeight + 'px';
+                }
+            };
+        });
+    </script>
+</body>
+</html> 
