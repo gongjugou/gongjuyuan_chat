@@ -57,7 +57,7 @@ class ModelUsageStatInline(admin.TabularInline):
 # 主管理类
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'model', 'embedding_model', 'is_active')
+    list_display = ('id', 'name', 'user', 'model', 'embedding_model', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('name', 'description', 'user__username')
     fieldsets = (

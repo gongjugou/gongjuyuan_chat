@@ -9,7 +9,11 @@
 
     // 如果存在全局配置，则合并
     if (window.ChatWidget && window.ChatWidget.config) {
-        Object.assign(config, window.ChatWidget.config);
+        // 确保用户配置优先
+        config.application_id = window.ChatWidget.config.application_id || config.application_id;
+        config.protocol = window.ChatWidget.config.protocol || config.protocol;
+        config.host = window.ChatWidget.config.host || config.host;
+        config.token = window.ChatWidget.config.token || config.token;
     }
 
     // 检查是否提供了应用ID
