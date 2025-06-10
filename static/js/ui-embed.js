@@ -541,26 +541,158 @@
         });
     }
 
-    // 绑定其他事件
-    function bindEvents() {
-        console.log('开始绑定事件...');
-        const expandBtn = container.querySelector('.chat-header-btn[title="放大"]');
-        const closeBtn = container.querySelector('.chat-header-btn[title="关闭"]');
-        const chatInput = container.querySelector('.chat-input');
-        const sendBtn = container.querySelector('.send-btn');
-        const newChatBtn = container.querySelector('.new-chat-btn');
-        const historyBtn = container.querySelector('#historyBtn');
-        const historyList = container.querySelector('#historyList');
-
-        console.log('找到的元素:', {
-            expandBtn: !!expandBtn,
-            closeBtn: !!closeBtn,
-            chatInput: !!chatInput,
-            sendBtn: !!sendBtn,
-            newChatBtn: !!newChatBtn,
-            historyBtn: !!historyBtn,
-            historyList: !!historyList
+    // 格式化时间
+    function formatTime(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
         });
+    }
+
+    // 加载对话列表
+    async function loadConversations(shouldLoadFirstConversation = true) {
+        if (!sessionId) {
+            console.error('会话ID未初始化');
+            return;
+        }
+
+        try {
+            console.log('加载对话列表，会话ID:', sessionId);
+            const response = await fetch(`${apiUrl}/conversations/?session_id=${sessionId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('获取到对话列表:', data);
+            
+            // 更新历史记录列表
+            const historyItems = document.querySelector('.history-items');
+            if (!historyItems) {
+                console.error('找不到历史记录列表容器');
+                return;
+            }
+
+            if (data.length === 0) {
+                historyItems.innerHTML = '<div class="history-item"><div class="history-item-title">暂无历史记录</div></div>';
+                return;
+            }
+            
+            historyItems.innerHTML = data.map(conv => `
+                <div class="history-item" data-id="${conv.conversation_id}">
+                    <div class="history-item-title">${conv.title || '新对话'}</div>
+                    <div class="history-item-time">${formatTime(conv.created_at)}</div>
+                </div>
+            `).join('');
+            
+            // 只有在shouldLoadFirstConversation为true且没有当前对话时才加载第一个对话
+            if (shouldLoadFirstConversation && data.length > 0 && !currentConversationId) {
+                await loadConversation(data[0].conversation_id);
+            }
+        } catch (error) {
+            console.error('加载对话列表失败:', error);
+            showError('加载对话列表失败');
+        }
+    }
+
+    // 绑定事件
+    function bindEvents() {
+        const robotAvatar = document.querySelector('.robot-avatar');
+        const chatContainer = document.querySelector('.chat-container');
+        const expandBtn = document.querySelector('.chat-header-btn[title="放大"]');
+        const closeBtn = document.querySelector('.chat-header-btn[title="关闭"]');
+        const chatInput = document.querySelector('.chat-input');
+        const sendBtn = document.querySelector('.send-btn');
+        const newChatBtn = document.querySelector('.new-chat-btn');
+        const historyBtn = document.querySelector('#historyBtn');
+        const historyList = document.querySelector('#historyList');
+
+        // 历史记录按钮事件
+        if (historyBtn) {
+            historyBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                historyList.classList.toggle('show');
+                // 如果显示历史记录，则重新加载
+                if (historyList.classList.contains('show')) {
+                    loadConversations();
+                }
+            };
+        }
+
+        // 点击历史记录项
+        if (historyList) {
+            historyList.addEventListener('click', function(e) {
+                const historyItem = e.target.closest('.history-item');
+                if (historyItem) {
+                    const conversationId = historyItem.dataset.id;
+                    if (conversationId) {
+                        loadConversation(conversationId);
+                        historyList.classList.remove('show');
+                    }
+                }
+            });
+        }
+
+        // 点击其他地方关闭历史记录
+        document.addEventListener('click', function(e) {
+            if (historyList && historyBtn && !historyList.contains(e.target) && !historyBtn.contains(e.target)) {
+                historyList.classList.remove('show');
+            }
+        });
+
+        // 阻止历史记录列表的点击事件冒泡
+        if (historyList) {
+            historyList.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // 新建对话事件
+        if (newChatBtn) {
+            newChatBtn.onclick = async function() {
+                try {
+                    // 清空聊天内容
+                    const chatContent = document.querySelector('.chat-content');
+                    if (chatContent) {
+                        chatContent.innerHTML = `
+                            <div class="message-item">
+                                <div class="message-avatar">
+                                    <img src="${staticBaseUrl}/images/logo.svg" alt="智能客服" class="avatar">
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        您好！我是您的智能客服助手，很高兴为您服务。请问有什么可以帮您？
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // 清空当前对话ID
+                    currentConversationId = null;
+                    
+                    // 清空输入框
+                    if (chatInput) {
+                        chatInput.value = '';
+                        chatInput.style.height = '44px';
+                        chatInput.focus();
+                    }
+
+                    // 重新加载对话列表，但不加载第一个对话
+                    await loadConversations(false);
+                } catch (error) {
+                    console.error('新建对话失败:', error);
+                    showError('新建对话失败: ' + error.message);
+                }
+            };
+        }
 
         // 展开/收起事件
         if (expandBtn) {
@@ -619,60 +751,6 @@
                     }
                 }
             };
-        }
-
-        // 新建对话事件
-        if (newChatBtn) {
-            newChatBtn.onclick = function() {
-                console.log('点击新建对话按钮');
-                // 清空聊天内容
-                document.querySelector('.chat-content').innerHTML = '';
-                // 清空当前对话ID
-                currentConversationId = null;
-                // 清空输入框
-                document.querySelector('.chat-input').value = '';
-                // 重置输入框高度
-                document.querySelector('.chat-input').style.height = '44px';
-                // 聚焦到输入框
-                document.querySelector('.chat-input').focus();
-            };
-        }
-
-        // 历史记录按钮事件
-        if (historyBtn) {
-            historyBtn.onclick = function(e) {
-                console.log('点击历史记录按钮');
-                e.preventDefault();
-                e.stopPropagation();
-                historyList.classList.toggle('show');
-            };
-        }
-
-        // 点击历史记录项
-        if (historyList) {
-            historyList.addEventListener('click', function(e) {
-                const historyItem = e.target.closest('.history-item');
-                if (historyItem) {
-                    console.log('点击历史记录项:', historyItem.dataset.id);
-                    const conversationId = historyItem.dataset.id;
-                    loadConversation(conversationId);
-                    historyList.classList.remove('show');
-                }
-            });
-        }
-
-        // 点击其他地方关闭历史记录
-        document.addEventListener('click', function(e) {
-            if (historyList && !historyList.contains(e.target) && !historyBtn.contains(e.target)) {
-                historyList.classList.remove('show');
-            }
-        });
-
-        // 阻止历史记录列表的点击事件冒泡
-        if (historyList) {
-            historyList.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
         }
 
         // 输入框自动调整高度
