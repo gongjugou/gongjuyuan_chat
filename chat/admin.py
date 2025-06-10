@@ -97,7 +97,7 @@ class AIModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'model_type', 'is_active', 'created_at')
     list_filter = ('model_type', 'is_active')
     search_fields = ('name', 'description')
-    readonly_fields = ('created_at', 'updated_at', 'total_usage')
+    readonly_fields = ('created_at', 'updated_at', 'total_usage', 'created_by')
     fieldsets = (
         ('基本信息', {
             'fields': ('name', 'model_type', 'description', 'is_active')
@@ -138,7 +138,7 @@ class AIModelAdmin(admin.ModelAdmin):
     total_usage.short_description = '总使用量'
     
     def save_model(self, request, obj, form, change):
-        if not obj.pk:  # 新建时自动设置创建人
+        if not change:  # 只在创建新模型时设置创建人
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
 
