@@ -151,8 +151,8 @@
                 'Accept': 'text/html',
                 'Content-Type': 'text/html',
             },
-            credentials: 'include',  // 如果需要发送cookies
-            mode: 'cors'  // 明确指定CORS模式
+            credentials: 'include',
+            mode: 'cors'
         })
         .then(response => {
             console.log('收到响应:', response.status, response.statusText);
@@ -192,12 +192,71 @@
                 if (chatScript) {
                     console.log('找到脚本元素');
                     const newScript = document.createElement('script');
-                    newScript.textContent = chatScript.textContent;
+                    // 修改脚本内容，替换API URL和所有API请求
+                    let scriptContent = chatScript.textContent;
+                    
+                    // 替换API URL
+                    scriptContent = scriptContent.replace(
+                        /const apiUrl = .*?;/,
+                        `const apiUrl = '${baseUrl}';`
+                    );
+
+                    // 替换所有fetch请求中的URL
+                    scriptContent = scriptContent.replace(
+                        /fetch\(`\${apiUrl}\/api\/chat\/applications\/\${applicationId}\/conversations\/`/g,
+                        `fetch(\`${baseUrl}/api/chat/applications/\${applicationId}/conversations/\``
+                    );
+                    scriptContent = scriptContent.replace(
+                        /fetch\(`\${apiUrl}\/api\/chat\/applications\/\${applicationId}\/conversations\/\${conversationId}\/messages\/`/g,
+                        `fetch(\`${baseUrl}/api/chat/applications/\${applicationId}/conversations/\${conversationId}/messages/\``
+                    );
+                    scriptContent = scriptContent.replace(
+                        /fetch\(`\${apiUrl}\/api\/chat\/applications\/\${applicationId}\/conversations\/\${conversationId}\/messages\/stream\/`/g,
+                        `fetch(\`${baseUrl}/api/chat/applications/\${applicationId}/conversations/\${conversationId}/messages/stream/\``
+                    );
+                    scriptContent = scriptContent.replace(
+                        /fetch\(`\${apiUrl}\/api\/chat\/applications\/\${applicationId}\/`/g,
+                        `fetch(\`${baseUrl}/api/chat/applications/\${applicationId}/\``
+                    );
+
+                    // 添加全局变量和session_id生成函数
+                    scriptContent = `
+                        // 全局配置
+                        window.ChatWidgetConfig = {
+                            baseUrl: '${baseUrl}',
+                            applicationId: ${config.application_id}
+                        };
+
+                        // 生成session_id
+                        function generateSessionId() {
+                            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                                const r = Math.random() * 16 | 0;
+                                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                                return v.toString(16);
+                            });
+                        }
+
+                        // 获取或创建session_id
+                        const chatSessionId = localStorage.getItem('chat_session_id') || generateSessionId();
+                        try {
+                            localStorage.setItem('chat_session_id', chatSessionId);
+                        } catch (e) {
+                            console.log('localStorage不可用，使用内存中的sessionId');
+                        }
+
+                        // 修改所有fetch请求，添加session_id
+                        ${scriptContent.replace(
+                            /body: JSON\.stringify\(\{([^}]*)\}\)/g,
+                            'body: JSON.stringify({$1, session_id: chatSessionId})'
+                        )}
+                    `;
+
+                    newScript.textContent = scriptContent;
                     document.body.appendChild(newScript);
                 }
                 
                 // 绑定其他事件
-                bindEvents(chatContainer);
+                bindEvents();
             }
         })
         .catch(error => {
@@ -209,55 +268,26 @@
         });
     }
 
-    // 绑定其他事件的函数
-    function bindEvents(chatContainer) {
+    // 绑定事件
+    function bindEvents() {
         console.log('开始绑定其他事件...');
         
-        const closeBtn = chatContainer.querySelector('.chat-header-btn[title="关闭"]');
-        const expandBtn = chatContainer.querySelector('.chat-header-btn[title="放大"]');
-        const historyBtn = chatContainer.querySelector('#historyBtn');
-        const historyList = chatContainer.querySelector('#historyList');
-        const chatInput = chatContainer.querySelector('.chat-input');
-        const sendBtn = chatContainer.querySelector('.send-btn');
-        const newChatBtn = chatContainer.querySelector('.new-chat-btn');
-
-        // 关闭按钮事件
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                console.log('关闭按钮被点击');
-                chatContainer.style.display = 'none';
-                container.querySelector('.robot-avatar').style.display = 'flex';
-            };
-        }
-
-        // 展开/收起事件
-        if (expandBtn) {
-            expandBtn.onclick = function() {
-                console.log('展开/收起按钮被点击');
-                chatContainer.classList.toggle('expanded');
-                this.querySelector('i').className = chatContainer.classList.contains('expanded') 
-                    ? 'ri-fullscreen-exit-line' 
-                    : 'ri-fullscreen-line';
-                this.title = chatContainer.classList.contains('expanded') ? '收起' : '放大';
-            };
-        }
-
-        // 历史记录按钮事件
-        if (historyBtn && historyList) {
-            historyBtn.onclick = function(e) {
-                console.log('历史记录按钮被点击');
-                e.preventDefault();
-                e.stopPropagation();
-                historyList.classList.toggle('show');
-            };
-        }
+        // 获取所有需要的元素
+        const chatInput = container.querySelector('.chat-input');
+        const sendBtn = container.querySelector('.send-btn');
+        const newChatBtn = container.querySelector('.new-chat-btn');
+        const historyBtn = container.querySelector('#historyBtn');
+        const historyList = container.querySelector('#historyList');
+        const expandBtn = container.querySelector('.chat-header-btn[title="放大"]');
+        const closeBtn = container.querySelector('.chat-header-btn[title="关闭"]');
 
         // 发送消息事件
         if (sendBtn) {
             sendBtn.onclick = function(e) {
-                console.log('发送按钮被点击');
                 e.preventDefault();
-                if (typeof sendMessage === 'function' && !isLoading) {
+                e.stopPropagation();
+                console.log('发送按钮被点击');
+                if (!isLoading) {
                     sendMessage();
                 }
             };
@@ -267,9 +297,9 @@
         if (chatInput) {
             chatInput.onkeypress = function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                    console.log('输入框回车事件触发');
                     e.preventDefault();
-                    if (typeof sendMessage === 'function' && !isLoading) {
+                    console.log('输入框回车事件触发');
+                    if (!isLoading) {
                         sendMessage();
                     }
                 }
@@ -279,9 +309,73 @@
         // 新建对话事件
         if (newChatBtn) {
             newChatBtn.onclick = function() {
-                console.log('新建对话按钮被点击');
-                if (typeof createNewConversation === 'function') {
-                    createNewConversation();
+                // 清空聊天内容
+                const chatContent = container.querySelector('.chat-content');
+                if (chatContent) {
+                    chatContent.innerHTML = '';
+                }
+                // 清空当前对话ID
+                currentConversationId = null;
+                // 清空输入框
+                if (chatInput) {
+                    chatInput.value = '';
+                    chatInput.style.height = '44px';
+                    chatInput.focus();
+                }
+            };
+        }
+
+        // 历史记录按钮事件
+        if (historyBtn && historyList) {
+            historyBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                historyList.classList.toggle('show');
+            };
+        }
+
+        // 点击历史记录项
+        if (historyList) {
+            historyList.addEventListener('click', function(e) {
+                const historyItem = e.target.closest('.history-item');
+                if (historyItem) {
+                    const conversationId = historyItem.dataset.id;
+                    loadConversation(conversationId);
+                    historyList.classList.remove('show');
+                }
+            });
+        }
+
+        // 展开/收起事件
+        if (expandBtn) {
+            expandBtn.onclick = function() {
+                isExpanded = !isExpanded;
+                const chatContainer = container.querySelector('.chat-container');
+                if (chatContainer) {
+                    chatContainer.classList.toggle('expanded');
+                }
+                this.querySelector('i').className = isExpanded ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line';
+                this.title = isExpanded ? '收起' : '放大';
+            };
+        }
+
+        // 关闭按钮事件
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                const chatContainer = container.querySelector('.chat-container');
+                const robotAvatar = container.querySelector('.robot-avatar');
+                if (chatContainer && robotAvatar) {
+                    chatContainer.style.display = 'none';
+                    robotAvatar.style.display = 'flex';
+                    if (isExpanded) {
+                        isExpanded = false;
+                        chatContainer.classList.remove('expanded');
+                        const expandBtn = container.querySelector('.chat-header-btn[title="放大"]');
+                        if (expandBtn) {
+                            expandBtn.querySelector('i').className = 'ri-fullscreen-line';
+                            expandBtn.title = '放大';
+                        }
+                    }
                 }
             };
         }

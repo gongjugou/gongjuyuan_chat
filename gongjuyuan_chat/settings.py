@@ -73,10 +73,11 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# 禁用Django的CORS中间件
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # 跨域中间件，要放在CommonMiddleware之前
+    # 'corsheaders.middleware.CorsMiddleware',  # 注释掉这行
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

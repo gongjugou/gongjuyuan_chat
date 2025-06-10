@@ -530,7 +530,7 @@
                 <div class="message-item">
                     <div class="message-avatar">
                         {% if application.avatar %}
-                            <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                            <img src="{{ request.scheme }}://{{ request.get_host }}{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
                         {% else %}
                             <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
                         {% endif %}
@@ -705,7 +705,7 @@
                     <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
                         <div class="message-avatar">
                             {% if application.avatar %}
-                                <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                                <img src="{{ request.scheme }}://{{ request.get_host }}{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
                             {% else %}
                                 <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
                             {% endif %}
@@ -803,7 +803,7 @@
             let messageHtml = `
                 <div class="message-avatar">
                     {% if application.avatar %}
-                        <img src="{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ application.avatar.url }}" alt="{{ application.name }}" class="avatar">
                     {% else %}
                         <img src="{% static 'images/logo.svg' %}" alt="{{ application.name }}" class="avatar">
                     {% endif %}
