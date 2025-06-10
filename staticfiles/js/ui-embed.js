@@ -10,7 +10,8 @@
         avatar: {
             type: 'default', // 'default', 'svg', 'image'
             content: null    // SVG内容或图片URL
-        }
+        },
+        chatAvatar: null    // 聊天界面中的头像URL
     };
     console.log('初始配置:', config);
 
@@ -267,7 +268,7 @@
             chatContent.innerHTML = data.map(msg => `
                 <div class="message-item ${msg.role === 'user' ? 'user-message' : ''}">
                     <div class="message-avatar">
-                        <img src="${staticBaseUrl}/images/logo.svg" alt="智能客服" class="avatar">
+                        <img src="${config.chatAvatar || `${staticBaseUrl}/images/logo.svg`}" alt="智能客服" class="avatar">
                     </div>
                     <div class="message-content">
                         ${msg.role === 'assistant' && msg.reasoning ? `
@@ -446,7 +447,7 @@
         
         let messageHtml = `
             <div class="message-avatar">
-                <img src="${staticBaseUrl}/images/logo.svg" alt="智能客服" class="avatar">
+                <img src="${config.chatAvatar || `${staticBaseUrl}/images/logo.svg`}" alt="智能客服" class="avatar">
             </div>
             <div class="message-content">
         `;
@@ -530,6 +531,13 @@
             // 获取应用信息
             const applicationInfo = doc.querySelector('title').textContent;
             console.log('应用信息:', applicationInfo);
+            
+            // 提取聊天头像
+            const chatAvatar = doc.querySelector('.message-avatar img');
+            if (chatAvatar) {
+                console.log('找到聊天头像:', chatAvatar.src);
+                config.chatAvatar = chatAvatar.src;
+            }
             
             const chatContainer = container.querySelector('.chat-container');
             const chatWidget = doc.querySelector('.chat-widget');
@@ -688,7 +696,7 @@
                         chatContent.innerHTML = `
                             <div class="message-item">
                                 <div class="message-avatar">
-                                    <img src="${staticBaseUrl}/images/logo.svg" alt="智能客服" class="avatar">
+                                    <img src="${config.chatAvatar || `${staticBaseUrl}/images/logo.svg`}" alt="智能客服" class="avatar">
                                 </div>
                                 <div class="message-content">
                                     <div class="message-text">
