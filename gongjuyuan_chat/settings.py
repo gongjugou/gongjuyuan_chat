@@ -1,18 +1,13 @@
-
 from pathlib import Path
 import os
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-a(dlxgxnxt@cmg17oepuj0@qe&os3)d%s4$a39-6^^-#juvh%x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = False  # 开发环境设置为True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
@@ -50,48 +45,33 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+
+# CORS配置
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_ORIGINS = [
-    "http://localhost:5173/",  # Vue.js开发服务器
-    "https://www.example.com",  # 生产环境的前端域名
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
-
-
-# 添加以下配置支持长时间运行的连接
-# 适合开发环境，生产环境需要更专业的配置
-if DEBUG:
-    # 增加请求超时时间
-    DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 50  # 50MB
-    FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 50  # 50MB
-    
-    # 流式响应超时设置
-    STREAMING_RESPONSE_TIMEOUT = 3600  # 1小时
-    
-    # 允许的请求头
-    ALLOWED_HOSTS = ['*']
-    
-    # 跨域设置 (开发时可能需要)
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ALLOW_METHODS = [
-        'GET',
-        'POST',
-        'PUT',
-        'PATCH',
-        'DELETE',
-        'OPTIONS'
-    ]
-    CORS_ALLOW_HEADERS = [
-        'accept',
-        'accept-encoding',
-        'authorization',
-        'content-type',
-        'dnt',
-        'origin',
-        'user-agent',
-        'x-csrftoken',
-        'x-requested-with',
-    ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -145,60 +145,68 @@
     // 加载聊天组件的函数
     function loadChatComponent() {
         console.log('开始加载聊天组件...');
-        fetch(chatUrl)
-            .then(response => {
-                console.log('收到响应:', response.status, response.statusText);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        fetch(chatUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'text/html',
+            },
+            credentials: 'include',  // 如果需要发送cookies
+            mode: 'cors'  // 明确指定CORS模式
+        })
+        .then(response => {
+            console.log('收到响应:', response.status, response.statusText);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            console.log('成功获取HTML内容，长度:', html.length);
+            // 提取 body 中的内容
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const chatContainer = container.querySelector('.chat-container');
+            const chatWidget = doc.querySelector('.chat-widget');
+            
+            if (chatWidget) {
+                console.log('找到聊天组件元素');
+                // 只获取聊天容器的内容
+                const chatContent = chatWidget.querySelector('.chat-container');
+                if (chatContent) {
+                    console.log('找到聊天容器内容');
+                    chatContainer.innerHTML = chatContent.innerHTML;
                 }
-                return response.text();
-            })
-            .then(html => {
-                console.log('成功获取HTML内容，长度:', html.length);
-                // 提取 body 中的内容
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const chatContainer = container.querySelector('.chat-container');
-                const chatWidget = doc.querySelector('.chat-widget');
                 
-                if (chatWidget) {
-                    console.log('找到聊天组件元素');
-                    // 只获取聊天容器的内容
-                    const chatContent = chatWidget.querySelector('.chat-container');
-                    if (chatContent) {
-                        console.log('找到聊天容器内容');
-                        chatContainer.innerHTML = chatContent.innerHTML;
-                    }
-                    
-                    // 添加样式
-                    const chatStyles = doc.querySelector('style');
-                    if (chatStyles) {
-                        console.log('找到样式元素');
-                        const newStyle = document.createElement('style');
-                        newStyle.textContent = chatStyles.textContent;
-                        document.head.appendChild(newStyle);
-                    }
-
-                    // 添加脚本
-                    const chatScript = doc.querySelector('script');
-                    if (chatScript) {
-                        console.log('找到脚本元素');
-                        const newScript = document.createElement('script');
-                        newScript.textContent = chatScript.textContent;
-                        document.body.appendChild(newScript);
-                    }
-                    
-                    // 绑定其他事件
-                    bindEvents(chatContainer);
+                // 添加样式
+                const chatStyles = doc.querySelector('style');
+                if (chatStyles) {
+                    console.log('找到样式元素');
+                    const newStyle = document.createElement('style');
+                    newStyle.textContent = chatStyles.textContent;
+                    document.head.appendChild(newStyle);
                 }
-            })
-            .catch(error => {
-                console.error('加载聊天组件失败:', error);
-                console.error('错误详情:', {
-                    message: error.message,
-                    stack: error.stack
-                });
+
+                // 添加脚本
+                const chatScript = doc.querySelector('script');
+                if (chatScript) {
+                    console.log('找到脚本元素');
+                    const newScript = document.createElement('script');
+                    newScript.textContent = chatScript.textContent;
+                    document.body.appendChild(newScript);
+                }
+                
+                // 绑定其他事件
+                bindEvents(chatContainer);
+            }
+        })
+        .catch(error => {
+            console.error('加载聊天组件失败:', error);
+            console.error('错误详情:', {
+                message: error.message,
+                stack: error.stack
             });
+        });
     }
 
     // 绑定其他事件的函数
