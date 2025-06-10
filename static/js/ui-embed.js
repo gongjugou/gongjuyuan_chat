@@ -6,7 +6,11 @@
         protocol: window.location.protocol.replace(':', ''),
         host: window.location.host,
         application_id: null,
-        token: null
+        token: null,
+        avatar: {
+            type: 'default', // 'default', 'svg', 'image'
+            content: null    // SVG内容或图片URL
+        }
     };
     console.log('初始配置:', config);
 
@@ -123,7 +127,6 @@
     // 创建机器人头像
     const robotAvatar = document.createElement('div');
     robotAvatar.className = 'robot-avatar';
-    robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
     
     // 创建聊天容器
     const chatContainer = document.createElement('div');
@@ -138,6 +141,44 @@
     
     console.log('容器创建完成，DOM结构:', container.outerHTML);
     console.log('机器人头像元素:', robotAvatar);
+    
+    // 立即获取应用信息并设置头像
+    fetch(chatUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'text/html',
+            'Content-Type': 'text/html',
+        },
+        credentials: 'include',
+        mode: 'cors'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(html => {
+        // 提取SVG内容
+        const svgContent = html.match(/<svg[^>]*>[\s\S]*?<\/svg>/);
+        console.log('初始化时提取到的SVG内容:', svgContent ? svgContent[0] : '未找到SVG');
+        
+        if (svgContent) {
+            console.log('找到SVG内容，设置初始头像');
+            config.avatar = {
+                type: 'svg',
+                content: svgContent[0]
+            };
+            robotAvatar.innerHTML = svgContent[0];
+        } else {
+            console.log('未找到SVG内容，使用默认logo');
+            robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+        }
+    })
+    .catch(error => {
+        console.error('获取应用信息失败:', error);
+        robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+    });
     
     // 使用事件委托
     container.addEventListener('click', function(e) {
@@ -490,23 +531,6 @@
             const applicationInfo = doc.querySelector('title').textContent;
             console.log('应用信息:', applicationInfo);
             
-            // 更新机器人头像
-            const robotAvatar = container.querySelector('.robot-avatar');
-            console.log('当前机器人头像元素:', robotAvatar);
-            
-            // 直接从HTML中提取SVG内容
-            const svgContent = html.match(/<svg[^>]*>[\s\S]*?<\/svg>/);
-            console.log('提取到的SVG内容:', svgContent ? svgContent[0] : '未找到SVG');
-            
-            if (svgContent) {
-                console.log('找到SVG内容，准备更新机器人头像');
-                robotAvatar.innerHTML = svgContent[0];
-                console.log('更新后的机器人头像HTML:', robotAvatar.innerHTML);
-            } else {
-                console.log('未找到SVG内容，使用默认logo');
-                robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
-            }
-            
             const chatContainer = container.querySelector('.chat-container');
             const chatWidget = doc.querySelector('.chat-widget');
             
@@ -767,6 +791,40 @@
         console.log('事件绑定完成');
     }
 
+    // 设置头像的函数
+    function setAvatar(avatarConfig) {
+        const robotAvatar = container.querySelector('.robot-avatar');
+        if (!robotAvatar) {
+            console.error('找不到机器人头像元素');
+            return;
+        }
+
+        if (!avatarConfig) {
+            // 使用默认头像
+            robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+            return;
+        }
+
+        switch (avatarConfig.type) {
+            case 'svg':
+                if (avatarConfig.content) {
+                    robotAvatar.innerHTML = avatarConfig.content;
+                } else {
+                    robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+                }
+                break;
+            case 'image':
+                if (avatarConfig.content) {
+                    robotAvatar.innerHTML = `<img src="${avatarConfig.content}" alt="智能客服">`;
+                } else {
+                    robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+                }
+                break;
+            default:
+                robotAvatar.innerHTML = `<img src="${staticBaseUrl}/images/logo.svg" alt="智能客服">`;
+        }
+    }
+
     // 暴露配置方法
     window.ChatWidget = {
         setConfig: function(newConfig) {
@@ -775,10 +833,21 @@
             // 更新基础URL
             baseUrl = `${config.protocol}://${config.host}`;
             console.log('更新后的基础URL:', baseUrl);
+            
+            // 如果配置中包含头像信息，更新头像
+            if (newConfig.avatar) {
+                setAvatar(newConfig.avatar);
+            }
         },
         getConfig: function() {
             console.log('获取当前配置');
             return { ...config };
+        },
+        // 新增设置头像的方法
+        setAvatar: function(avatarConfig) {
+            console.log('设置新头像:', avatarConfig);
+            config.avatar = avatarConfig;
+            setAvatar(avatarConfig);
         }
     };
     
