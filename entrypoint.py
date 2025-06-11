@@ -40,7 +40,7 @@ def main():
     # 启动 uWSGI
     uwsgi_args = [
         '/usr/local/bin/uwsgi',
-        '--socket', '0.0.0.0:9000',
+        '--socket', '0.0.0.0:8000',
         '--protocol', 'uwsgi',
         '--chdir', '/gongjuyuan_chat',  # 改为项目目录
         '--module', 'gongjuyuan_chat.wsgi:application',  # 适配项目名
