@@ -4,12 +4,6 @@ import logging
 import subprocess
 from pathlib import Path
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 def run_migrations():
     try:
@@ -17,17 +11,8 @@ def run_migrations():
         Path('/gongjuyuan_chat/staticfiles').mkdir(parents=True, exist_ok=True)
         Path('/gongjuyuan_chat/media').mkdir(parents=True, exist_ok=True)
 
-        # 运行数据库迁移
-        logger.info("Running database migrations...")
-        subprocess.run(['python', 'manage.py', 'migrate'], check=True)
-        
-        # 收集静态文件
-        logger.info("Collecting static files...")
-        subprocess.run(['python', 'manage.py', 'collectstatic', '--noinput'], check=True)
-        
-        logger.info("Migrations and static files collection completed successfully")
     except subprocess.CalledProcessError as e:
-        logger.error(f"Error during migrations: {e}")
+      
         sys.exit(1)
 
 def main():
@@ -58,10 +43,10 @@ def main():
     ]
 
     try:
-        logger.info("Starting uwsgi server...")
+       
         os.execvp('/usr/local/bin/uwsgi', uwsgi_args)
     except Exception as e:
-        logger.error(f"Failed to start uwsgi: {e}")
+   
         sys.exit(1)
 
 if __name__ == '__main__':

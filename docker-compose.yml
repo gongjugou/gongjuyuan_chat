@@ -26,7 +26,7 @@ services:
     volumes:
       - static_volume:/gongjuyuan_chat/staticfiles
       - media_volume:/gongjuyuan_chat/media
-      - db_volume:/gongjuyuan_chat/db  # 使用命名卷存储数据库
+      - ./db.sqlite3:/gongjuyuan_chat/db.sqlite3  # 改回原来的数据库映射
     networks:
       - app_network
 
@@ -39,4 +39,3 @@ networks:
 volumes:
   static_volume:    # 静态文件卷
   media_volume:     # 媒体文件卷
-  db_volume:        # 数据库卷
