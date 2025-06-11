@@ -1,11 +1,11 @@
 使用方法
 1：django默认开启了cors全部允许.
-nginx配置，参考使用nginx.conf2的即可，
+nginx配置，参考使用nginx.conf的即可，
 解释：配置一下静态，配置一下媒体，配置一下代理 即可。
 
 
 2：如果需要配置cors，
-nginx配置，参考用nginx.conf 即可
+nginx配置，参考用nginx.conf2 即可
 解释：
 2.1：添加CORS相关配置允许域名访问，
 2.2：静态添加CORS头，

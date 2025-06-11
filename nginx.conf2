@@ -3,44 +3,92 @@ worker_processes  1;  # 根据CPU核心数调整
 events {
     worker_connections  1024;
 }
+
 http {
-    # ... 其他基本配置 ...
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    # 添加CORS相关配置
+    map $http_origin $cors_origin {
+        default "";
+        "http://localhost:5173" $http_origin;
+        "http://127.0.0.1:5173" $http_origin;
+        # 可以添加其他允许的源
+    }
 
     server {
         listen       80;
-        server_name  127.0.0.1 localhost;
+        server_name  127.0.0.1 localhost;  # 本地测试用本地域名
 
-        # 静态文件配置
+        # 静态文件配置（Django的collectstatic目录）
         location /static/ {
-            alias D:/gongjuyuan_chat/staticfiles/;
+            alias D:/gongjuyuan_chat/staticfiles/;  # 替换为你的STATIC_ROOT实际路径
             expires 30d;
             access_log off;
+            
+            # 添加CORS头
+            add_header 'Access-Control-Allow-Origin' $cors_origin always;
+            add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
         }
 
-        # 媒体文件配置
+        # 媒体文件配置（如果有）
         location /media/ {
-            alias D:/gongjuyuan_chat/media/;
+            alias D:/gongjuyuan_chat/media/;  # 替换为MEDIA_ROOT实际路径
             expires 30d;
             access_log off;
+            
+            # 添加CORS头
+            add_header 'Access-Control-Allow-Origin' $cors_origin always;
+            add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
         }
 
         # 动态请求转发给Django
         location / {
-            proxy_pass http://127.0.0.1:9000;
+            # 处理OPTIONS请求
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' $cors_origin always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+
+            proxy_pass http://127.0.0.1:9000;  # 指向你的Django服务端口
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 添加CORS头
+            add_header 'Access-Control-Allow-Origin' $cors_origin always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
 
             # 超时设置
             proxy_connect_timeout 60s;
             proxy_read_timeout 600s;
             proxy_send_timeout 600s;
 
-            # WebSocket支持
+            # WebSocket支持（如果需要）
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
         }
     }
 }
