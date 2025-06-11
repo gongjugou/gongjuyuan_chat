@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-a(dlxgxnxt@cmg17oepuj0@qe&os3)d%s4$a39-6^^-#juvh%x
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False  # 开发环境设置为True
-
+# proxy_set_header Host $host;   如果开启反向代理，设置一下，比如chat.gongjuyuan.com ，到django，host还是chat.gongjuyuan.com
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'chat.gongjuyuan.com', '10.62.169.173']
 
 LOGIN_URL = '/admin/login/'  # 使用Django admin的登录页面
@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'gongjuyuan_chat.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
     }
 }
 

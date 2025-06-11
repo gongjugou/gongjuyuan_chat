@@ -1,5 +1,3 @@
-
-
 services:
   # Nginx 服务
   nginx:
@@ -28,7 +26,7 @@ services:
     volumes:
       - static_volume:/gongjuyuan_chat/staticfiles
       - media_volume:/gongjuyuan_chat/media
-      - ./db.sqlite3:/gongjuyuan_chat/db.sqlite3  # SQLite 数据库文件
+      - db_volume:/gongjuyuan_chat/db  # 使用命名卷存储数据库
     networks:
       - app_network
 
@@ -41,3 +39,4 @@ networks:
 volumes:
   static_volume:    # 静态文件卷
   media_volume:     # 媒体文件卷
+  db_volume:        # 数据库卷

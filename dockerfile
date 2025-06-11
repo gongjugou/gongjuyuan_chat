@@ -29,13 +29,11 @@ ENV PYTHONPATH=/gongjuyuan_chat \
     PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=gongjuyuan_chat.settings
 
-    # 创建非root用户
+# 创建非root用户
 RUN useradd -m -u 1000 appuser \
-    && mkdir -p /gongjuyuan_chat/staticfiles /gongjuyuan_chat/media \
+    && mkdir -p /gongjuyuan_chat/staticfiles /gongjuyuan_chat/media /gongjuyuan_chat/db \
     && chown -R appuser:appuser /gongjuyuan_chat \
-    && chmod -R 777 /gongjuyuan_chat/staticfiles /gongjuyuan_chat/media
-
-
+    && chmod -R 777 /gongjuyuan_chat/staticfiles /gongjuyuan_chat/media /gongjuyuan_chat/db
 
 # 切换到非root用户
 USER appuser
