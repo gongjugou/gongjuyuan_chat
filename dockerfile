@@ -8,9 +8,10 @@ COPY . /gongjuyuan_chat/
 
 
 # 安装依赖（使用清华镜像加速）
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir uwsgi
+RUN pip install --no-cache-dir -r requirements.txt \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && pip install --no-cache-dir uwsgi \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 
 
