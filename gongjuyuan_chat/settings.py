@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'rest_framework', # 添加rest_framework
     # 'rest_framework.authtoken', # 添加rest_framework.authtoken
     'chat', # 添加chat
-   
+    'corsheaders',  # cors配置app
     'embeddings', # 添加embeddings
 ]
 
@@ -49,6 +49,7 @@ REST_FRAMEWORK = {
 
 # 禁用Django的CORS中间件
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # cors配置
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,6 +58,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# 允许所有配置。
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'gongjuyuan_chat.urls'
 
