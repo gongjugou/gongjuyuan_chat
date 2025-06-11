@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def run_migrations():
     try:
         # 确保静态文件和媒体目录存在
-        Path('/gongjuyuan_chat/static').mkdir(parents=True, exist_ok=True)
+        Path('/gongjuyuan_chat/staticfiles').mkdir(parents=True, exist_ok=True)
         Path('/gongjuyuan_chat/media').mkdir(parents=True, exist_ok=True)
 
         # 运行数据库迁移
