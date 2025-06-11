@@ -25,7 +25,7 @@ http {
 
         # 静态文件配置（Django的collectstatic目录）
         location /static/ {
-            alias D:/gongjuyuan_chat/staticfiles/;  # 替换为你的STATIC_ROOT实际路径
+            alias /gongjuyuan_chat/staticfiles/;  # 替换为你的STATIC_ROOT实际路径
             expires 30d;
             access_log off;
             
@@ -38,7 +38,7 @@ http {
 
         # 媒体文件配置（如果有）
         location /media/ {
-            alias D:/gongjuyuan_chat/media/;  # 替换为MEDIA_ROOT实际路径
+            alias /gongjuyuan_chat/media/;  # 替换为MEDIA_ROOT实际路径
             expires 30d;
             access_log off;
             

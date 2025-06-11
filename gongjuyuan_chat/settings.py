@@ -137,7 +137,7 @@ API_URL = 'http://127.0.0.1:9000'  # 开发环境
 
 # 静态文件设置
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # 用于收集静态文件
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static'),  # 你的静态文件目录
 ]
