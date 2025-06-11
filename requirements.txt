@@ -29,3 +29,5 @@ sqlite3-to-mysql==2.1.9
 coreapi>=2.3.3
 pyyaml>=5.1
 uritemplate>=3.0.0
+numpy==1.24.4
+openai==1.84.0
