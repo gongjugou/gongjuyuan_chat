@@ -1,4 +1,3 @@
-# 构建阶段
 FROM python:3.9 as builder
 
 # 设置工作目录（改为项目相关名称）
@@ -28,7 +27,7 @@ COPY . /gongjuyuan_chat/
 # 设置环境变量（同步项目名称）
 ENV PYTHONPATH=/gongjuyuan_chat \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=gongjuyuan_chat.settings  # 确保与你的Django项目名一致
+    DJANGO_SETTINGS_MODULE=gongjuyuan_chat.settings
 
 # 创建非root用户
 RUN useradd -m -u 1000 appuser \
