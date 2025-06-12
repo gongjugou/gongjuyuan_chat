@@ -1,4 +1,24 @@
-# 工具园聊天机器人部署指南
+
+### 在线体验
+> 注意：由于服务器位于家庭环境，可能无法保证 24 小时在线
+
+```html
+<!-- 1. 配置 -->
+<script>
+  window.ChatWidget = {
+      config: {
+          application_id: 2,  // 您的应用ID
+          protocol: 'http',   // 协议
+          host: 'chat.gongjuyuan.com'  // 主机地址
+      }
+  };
+</script>
+
+<!-- 2. 加载脚本 -->
+<script async defer src="http://chat.gongjuyuan.com/static/js/ui-embed.js"></script>
+```
+
+# 工具猿聊天机器人部署指南
 
 ## 部署步骤
 
@@ -68,24 +88,7 @@ docker-compose up -d
 <script async defer src="http://127.0.0.1:8000/static/js/ui-embed.js"></script>
 ```
 
-### 在线体验
-> 注意：由于服务器位于家庭环境，可能无法保证 24 小时在线
-
-```html
-<!-- 1. 配置 -->
-<script>
-  window.ChatWidget = {
-      config: {
-          application_id: 2,  // 您的应用ID
-          protocol: 'http',   // 协议
-          host: 'chat.gongjuyuan.com'  // 主机地址
-      }
-  };
-</script>
-
-<!-- 2. 加载脚本 -->
-<script async defer src="http://chat.gongjuyuan.com/static/js/ui-embed.js"></script>
-```
+#### 目前只支持硅基流动的api，用的人多了，再考虑...
 
 ## Docker 管理
 
