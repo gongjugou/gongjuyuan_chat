@@ -7,7 +7,7 @@
 5：宝塔：建立一个网站，域名需要和settings.py 里面的域名一样，然后设置，反向代理，http://公网ip:9000
 
 6:本地如果测试使用，需要在settings.py 添加本机ip127.0.0.1:9000/admin 测试一下，
-
+docker-compose down --rmi all --volumes --remove-orphans
 # 安装到任何网站：
     <!-- 1. 配置 -->
 <script>
