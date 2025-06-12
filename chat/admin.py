@@ -73,7 +73,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             'description': '这些设置仅在选择了向量模型时生效'
         }),
         ('对话设置', {
-            'fields': ('system_role', 'show_reasoning')
+            'fields': ('system_role',)
         })
     )
     inlines = [ChatConversationInline]
