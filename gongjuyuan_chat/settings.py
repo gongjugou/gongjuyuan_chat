@@ -130,7 +130,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # API配置
-API_URL = 'http://127.0.0.1:9000'  # 开发环境
+# API_URL = 'http://127.0.0.1:9000'  # 开发环境
 # API_URL = 'https://您的域名'  # 生产环境
 
 
