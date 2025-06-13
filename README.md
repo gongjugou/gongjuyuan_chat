@@ -48,6 +48,7 @@ docker build -t gongjuyuan-chat:latest .
 sudo mkdir -p /data/gongjuyuan_chat/static /data/gongjuyuan_chat/media
 sudo chmod -R 755 /data/gongjuyuan_chat
 
+<<<<<<< HEAD
 # 启动容器
 docker run -d --name chat-app \
   -p 127.0.0.1:8000:8000 \
@@ -56,6 +57,14 @@ docker run -d --name chat-app \
   -v /data/gongjuyuan_chat/media:/gongjuyuan_chat/media \
   gongjuyuan-chat:latest
 ```
+=======
+### 5. 宝塔配置
+1. 创建新网站
+2. 域名需与 `settings.py` 中配置的域名一致
+3. 设置反向代理：`http://公网ip:9000`
+4. 反向代理配置文件中： proxy_set_header 这行改成：proxy_set_header Host $host; 
+
+>>>>>>> d2dbacef37002d9c43e68b7031d1d3e64cbe4ebc
 
 ### 5. Nginx 配置（宝塔面板）
 
