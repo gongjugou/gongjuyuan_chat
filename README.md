@@ -49,6 +49,8 @@ docker-compose up -d
 1. 创建新网站
 2. 域名需与 `settings.py` 中配置的域名一致
 3. 设置反向代理：`http://公网ip:9000`
+4. 反向代理配置文件中： proxy_set_header 这行改成：proxy_set_header Host $host; 
+
 
 ### 6. 题外话：
 如果你本地测试，部署完，访问 `127.0.0.1:9000/admin` 能看见内容，就算成功，因为django不代理静态了，
