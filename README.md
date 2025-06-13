@@ -1,21 +1,21 @@
 
 ### 在线体验--复制代码放到首页就可以看见右下角的对话客服了.
 > 注意：由于服务器位于家庭环境，可能无法保证 24 小时在线
-
+想测试速度可以访问：www.gongjuyuan.com  服务器在家，有可能访问不通，
 ```html
 <!-- 1. 配置 -->
 <script>
   window.ChatWidget = {
       config: {
           application_id: 2,  // 您的应用ID
-          protocol: 'http',   // 协议
+          protocol: 'https',   // 协议
           host: 'chat.gongjuyuan.com'  // 主机地址
       }
   };
 </script>
 
 <!-- 2. 加载脚本 -->
-<script async defer src="http://chat.gongjuyuan.com/static/js/ui-embed.js"></script>
+<script async defer src="https://chat.gongjuyuan.com/static/js/ui-embed.js"></script>
 ```
 
 # 工具猿聊天机器人部署指南
