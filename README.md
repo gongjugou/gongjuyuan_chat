@@ -52,7 +52,11 @@ cd gongjuyuan_chat
 docker-compose up -d
 ```
 
-### 3.查看
+### 4.宝塔添加网站，添加反向代理，代理 ip：9000
+编辑反向代理文件，proxy_set_header 这行改为：
+proxy_set_header Host $host; 
+
+### 5.查看
 
 访问 http://域名/api/chat/ui/2/
 右下角，会出现聊天按钮，不能对话，因为得到后台添加自己的api

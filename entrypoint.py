@@ -3,6 +3,7 @@ import sys
 import logging
 import subprocess
 from pathlib import Path
+import subprocess
 
 
 def run_migrations():
@@ -10,7 +11,7 @@ def run_migrations():
         # 确保静态文件和媒体目录存在
         Path('/gongjuyuan_chat/staticfiles').mkdir(parents=True, exist_ok=True)
         Path('/gongjuyuan_chat/media').mkdir(parents=True, exist_ok=True)
-
+        subprocess.run(['python', 'manage.py', 'collectstatic', '--noinput'], check=True)
     except subprocess.CalledProcessError as e:
       
         sys.exit(1)
