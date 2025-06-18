@@ -29,8 +29,21 @@
 - 通过 git 克隆或下载 zip 包并解压到服务器
 - git clone https://gitee.com/xujiusi/gongjuyuan_chat.git
 
+### 2.修改设置文件配置域名
+修改：gongjuyuan_chat-gongjuyuan_chat-settings.py
+下面三处，域名改成自己的。
 
-### 2. 运行
+ALLOWED_HOSTS = ['chat.gongjuyuan.com']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://chat.gongjuyuan.com',
+]
+
+ALLOWED_HOSTS = [
+    'chat.gongjuyuan.com',  # 主API域名
+]
+
+### 3. 运行
 ```bash
 # 进入 Dockerfile 所在目录
 cd gongjuyuan_chat
@@ -41,7 +54,7 @@ docker-compose up -d
 
 ### 3.查看
 
-访问 http://ip/api/chat/ui/2/
+访问 http://域名/api/chat/ui/2/
 右下角，会出现聊天按钮，不能对话，因为得到后台添加自己的api
 
 >>>>>>> d2dbacef37002d9c43e68b7031d1d3e64cbe4ebc
