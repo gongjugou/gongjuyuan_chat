@@ -9,7 +9,16 @@ SECRET_KEY = 'django-insecure-a(dlxgxnxt@cmg17oepuj0@qe&os3)d%s4$a39-6^^-#juvh%x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False  # 开发环境设置为True
 # proxy_set_header Host $host;   如果开启反向代理，设置一下，比如chat.gongjuyuan.com ，到django，host还是chat.gongjuyuan.com
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'chat.gongjuyuan.com', '10.62.169.173', '*']
+ALLOWED_HOSTS = ['chat.gongjuyuan.com']
+# 所有向 Django 提交数据的域名 加入 CSRF_TRUSTED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [
+    'https://chat.gongjuyuan.com',
+]
+
+# 确保后端域名在 ALLOWED_HOSTS 中
+ALLOWED_HOSTS = [
+    'chat.gongjuyuan.com',  # 主API域名
+]
 
 LOGIN_URL = '/admin/login/'  # 使用Django admin的登录页面
 LOGIN_REDIRECT_URL = '/admin/'  # 登录后重定向到admin界面
@@ -30,7 +39,6 @@ INSTALLED_APPS = [
     'corsheaders',  # cors配置app
     'embeddings', # 添加embeddings
 ]
-
 
 # 在文件末尾添加以下 DRF 配置
 REST_FRAMEWORK = {
