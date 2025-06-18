@@ -27,84 +27,29 @@
 ### 1. 环境准备
 - SSH 登录服务器
 - 通过 git 克隆或下载 zip 包并解压到服务器
+- git clone https://gitee.com/xujiusi/gongjuyuan_chat.git
 
-### 2. 域名配置
-进入 `gongjuyuan_chat` 目录，修改 `settings.py` 中的 `ALLOWED_HOSTS` 配置：
-- 添加您的域名（必填，用于 Nginx 反向代理）
-- 添加服务器公网 IP（选填，如果计划使用 IP 访问）
 
-### 3. 构建镜像
+### 2. 运行
 ```bash
 # 进入 Dockerfile 所在目录
-cd /path/to/dockerfile
+cd gongjuyuan_chat
 
 # 构建镜像
-docker build -t gongjuyuan-chat:latest .
+docker-compose up -d
 ```
 
-### 4. 运行容器
-```bash
-# 创建数据目录
-sudo mkdir -p /data/gongjuyuan_chat/static /data/gongjuyuan_chat/media
-sudo chmod -R 755 /data/gongjuyuan_chat
+### 3.查看
 
-<<<<<<< HEAD
-# 启动容器
-docker run -d --name chat-app \
-  -p 127.0.0.1:8000:8000 \
-  --restart unless-stopped \
-  -v /data/gongjuyuan_chat/static:/gongjuyuan_chat/staticfiles \
-  -v /data/gongjuyuan_chat/media:/gongjuyuan_chat/media \
-  gongjuyuan-chat:latest
-```
-=======
-### 5. 宝塔配置
-1. 创建新网站
-2. 域名需与 `settings.py` 中配置的域名一致
-3. 设置反向代理：`http://公网ip:9000`
-4. 反向代理配置文件中： proxy_set_header 这行改成：proxy_set_header Host $host; 
+访问 http://ip/api/chat/ui/2/
+右下角，会出现聊天按钮，不能对话，因为得到后台添加自己的api
 
 >>>>>>> d2dbacef37002d9c43e68b7031d1d3e64cbe4ebc
-
-### 5. Nginx 配置（宝塔面板）
-
-#### 5.1 创建网站
-1. 新建网站，绑定域名或 IP
-2. 设置反向代理：
-   - 代理名称：chat
-   - 目标 URL：http://127.0.0.1:8000
-
-#### 5.2 反向代理配置
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:8000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-#### 5.3 静态文件配置
-```nginx
-# 静态文件
-location /static/ {
-    alias /gongjuyuan_chat/staticfiles/;
-    expires 30d;
-    access_log off;
-}
-
-# 媒体文件
-location /media/ {
-    alias /gongjuyuan_chat/media/;
-    expires 30d;
-    access_log off;
-}
-```
 
 ## 后台管理
 
 ### 登录信息
+- 域名/admin
 - 用户名：`admin`
 - 密码：`gongjuyuan`
 
@@ -139,28 +84,3 @@ location /media/ {
 ```
 
 > 目前仅支持硅基流动的 API，后续会考虑支持更多模型
-
-## 维护管理
-
-### 容器管理
-```bash
-# 查看容器状态
-docker ps -a
-
-# 查看容器日志
-docker logs chat-app
-
-# 重启容器
-docker restart chat-app
-
-# 停止容器
-docker stop chat-app
-
-# 删除容器
-docker rm chat-app
-```
-
-### 数据备份
-- 静态文件位置：`/data/gongjuyuan_chat/static`
-- 媒体文件位置：`/data/gongjuyuan_chat/media`
-- 建议定期备份这些目录
